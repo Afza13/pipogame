@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIPO - Pintar Ide Pokok</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E8322A;
+  --orange: #FF7A00;
+  --orange-light: #FFB347;
+  --yellow: #FFD700;
+  --white: #FFFFFF;
+  --cream: #FFF8F0;
+  --green: #2ECC71;
+  --blue: #3498DB;
+  --purple: #9B59B6;
+  --dark: #2C1A0E;
+  --shadow: 0 6px 20px rgba(0,0,0,0.18);
+  --shadow-btn: 0 5px 0px rgba(0,0,0,0.25);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #FF7A00 0%, #E8322A 100%);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+/* ─── SCREEN CONTAINER ─── */
+.screen {
+  display: none;
+  width: 900px; min-height: 600px;
+  background: #FFF8F0;
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  position: relative;
+  overflow: hidden;
+  animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.screen.active { display: flex; flex-direction: column; }
+@keyframes popIn {
+  from { transform: scale(.85) translateY(30px); opacity:0; }
+  to   { transform: scale(1) translateY(0); opacity:1; }
+}
+
+/* ─── TOP NAV BAR ─── */
+.nav-bar {
+  position: absolute; top: 14px; left: 14px; right: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 100;
+}
+.nav-btn {
+  background: var(--white);
+  border: none; border-radius: 50%;
+  width: 44px; height: 44px;
+  font-size: 20px; cursor: pointer;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+}
+.nav-btn:hover { transform: scale(1.12); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.nav-right { display: flex; gap: 8px; }
+.sound-btn { font-size: 18px; }
+
+/* ─── DECORATIVE SHAPES ─── */
+.deco { position: absolute; pointer-events: none; z-index: 0; }
+.star { font-size: 24px; animation: twinkle 2s infinite alternate; }
+@keyframes twinkle { from{opacity:.5;transform:scale(1)} to{opacity:1;transform:scale(1.2)} }
+.cloud { font-size: 36px; animation: float 3s ease-in-out infinite alternate; }
+@keyframes float { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+.bubble {
+  border-radius: 50%; position: absolute;
+  animation: bubbleFloat 4s ease-in-out infinite alternate;
+}
+@keyframes bubbleFloat { from{transform:translateY(0)} to{transform:translateY(-15px)} }
+
+/* ─── BUTTONS ─── */
+.btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 18px; padding: 14px 32px;
+  border: none; border-radius: 50px; cursor: pointer;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.22);
+  transition: transform .1s, box-shadow .1s;
+  letter-spacing: .5px;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.22); }
+.btn-red    { background: var(--red); color: #fff; }
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-green  { background: var(--green); color: #fff; }
+.btn-yellow { background: var(--yellow); color: var(--dark); }
+.btn-white  { background: #fff; color: var(--red); }
+.btn:hover  { filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 8px 0 rgba(0,0,0,0.22); }
+
+/* ─── CARD ─── */
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  margin-bottom: 14px;
+}
+.card-orange { background: linear-gradient(135deg,#FF7A00,#FFB347); color:#fff; }
+.card-red    { background: linear-gradient(135deg,#E8322A,#FF6B6B); color:#fff; }
+.card-yellow { background: linear-gradient(135deg,#FFD700,#FFA500); }
+.card-green  { background: linear-gradient(135deg,#2ECC71,#27AE60); color:#fff; }
+.card-blue   { background: linear-gradient(135deg,#3498DB,#2980B9); color:#fff; }
+
+/* ─── SCROLLABLE CONTENT ─── */
+.content-scroll {
+  flex: 1; overflow-y: auto; padding: 70px 30px 30px;
+  scrollbar-width: thin; scrollbar-color: var(--orange) #f0e8d8;
+}
+.content-scroll::-webkit-scrollbar { width: 6px; }
+.content-scroll::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+
+/* ─── MASCOT ─── */
+.mascot-wrap { text-align: center; }
+.mascot-svg  { width: 120px; height: 120px; }
+
+/* ─── SECTION TITLE ─── */
+.sec-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 26px; color: var(--red);
+  text-align: center; margin-bottom: 18px;
+}
+
+/* ─────────────────────────────────── */
+/*  1. COVER SCREEN                    */
+/* ─────────────────────────────────── */
+#screen-cover {
+  background: linear-gradient(160deg, #FF7A00 0%, #E8322A 60%, #FFD700 100%);
+  align-items: center; justify-content: center; text-align: center;
+}
+#screen-cover .deco-cloud1  { top:20px; left:30px; }
+#screen-cover .deco-cloud2  { top:10px; right:40px; }
+#screen-cover .deco-star1   { top:60px; left:80px; }
+#screen-cover .deco-star2   { top:50px; right:100px; }
+#screen-cover .deco-star3   { bottom:80px; left:60px; }
+#screen-cover .deco-star4   { bottom:100px; right:70px; }
+#screen-cover .bubble1      { width:70px; height:70px; background:rgba(255,255,255,.15); top:140px; left:20px; }
+#screen-cover .bubble2      { width:50px; height:50px; background:rgba(255,255,255,.12); bottom:120px; right:30px; }
+.cover-inner { z-index:10; position:relative; }
+.cover-badge {
+  background: rgba(255,255,255,.2); border: 3px solid rgba(255,255,255,.5);
+  border-radius: 50px; padding: 6px 20px; display: inline-block;
+  font-size: 14px; color: #fff; font-weight: 700; letter-spacing: 1px;
+  margin-bottom: 10px; text-transform: uppercase;
+}
+.cover-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 72px; color: #fff;
+  text-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 0 40px rgba(255,200,0,.4);
+  line-height: 1; letter-spacing: 2px; margin: 10px 0 4px;
+}
+.cover-subtitle {
+  font-size: 18px; color: rgba(255,255,255,.95);
+  font-weight: 700; margin-bottom: 6px;
+}
+.cover-tagline {
+  font-size: 15px; color: rgba(255,255,255,.85);
+  font-weight: 600; margin-bottom: 24px;
+}
+.cover-info {
+  font-size: 13px; color: rgba(255,255,255,.75);
+  margin-top: 14px;
+}
+.cover-sound-hint {
+  position: absolute; bottom: 18px; right: 20px; z-index:20;
+}
+
+/* ─────────────────────────────────── */
+/*  2. MENU UTAMA                      */
+/* ─────────────────────────────────── */
+#screen-menu {
+  background: linear-gradient(160deg,#FFF3E0 0%,#FFF8F0 100%);
+}
+.menu-header {
+  background: linear-gradient(135deg,#E8322A,#FF7A00);
+  padding: 55px 30px 24px;
+  text-align: center; position: relative;
+}
+.menu-header-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 32px; color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,.2);
+}
+.menu-header-sub { font-size: 14px; color: rgba(255,255,255,.85); font-weight:600; }
+.menu-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px; padding: 24px 30px 20px;
+}
+.menu-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px 12px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,.12), 0 8px 20px rgba(0,0,0,.08);
+  transition: transform .15s, box-shadow .15s;
+  border: 3px solid transparent;
+  position: relative; overflow: hidden;
+}
+.menu-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:5px;
+}
+.menu-card:hover { transform: translateY(-5px); box-shadow: 0 10px 0 rgba(0,0,0,.12), 0 14px 28px rgba(0,0,0,.1); }
+.menu-card:active { transform: translateY(1px); }
+.menu-card .icon { font-size: 36px; margin-bottom: 8px; }
+.menu-card .label { font-family:'Fredoka One',cursive; font-size:15px; color:var(--dark); }
+.menu-card.c1::before { background:var(--red); }
+.menu-card.c2::before { background:var(--orange); }
+.menu-card.c3::before { background:#F39C12; }
+.menu-card.c4::before { background:var(--green); }
+.menu-card.c5::before { background:var(--blue); }
+.menu-card.c6::before { background:var(--purple); }
+.menu-card.c7::before { background:#E91E8C; }
+
+/* ─────────────────────────────────── */
+/*  IDENTITAS                          */
+/* ─────────────────────────────────── */
+.id-table { width:100%; border-collapse:collapse; }
+.id-table tr td { padding: 10px 14px; border-bottom: 1px solid #FFE0C0; }
+.id-table tr td:first-child { font-weight:800; color:var(--red); width:40%; }
+.id-table tr:last-child td { border:none; }
+
+/* ─────────────────────────────────── */
+/*  PANDUAN                            */
+/* ─────────────────────────────────── */
+.guide-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 12px 16px; background: white; border-radius: 16px;
+  margin-bottom: 12px; box-shadow: 0 3px 12px rgba(0,0,0,.07);
+}
+.guide-num {
+  background: var(--red); color: #fff;
+  font-family:'Fredoka One',cursive; font-size:20px;
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.guide-icon-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
+.guide-icon-item {
+  background: white; border-radius:14px; padding:10px 16px;
+  display:flex; align-items:center; gap:8px;
+  box-shadow:0 3px 10px rgba(0,0,0,.07); font-size:14px; font-weight:700;
+}
+.guide-icon-item .ico { font-size:22px; }
+
+/* ─────────────────────────────────── */
+/*  PETA KONSEP                        */
+/* ─────────────────────────────────── */
+.peta-wrap { text-align:center; padding-top:10px; }
+.peta-box {
+  display:inline-block; padding:14px 28px;
+  border-radius:20px; font-family:'Fredoka One',cursive;
+  font-size:18px; box-shadow: var(--shadow); margin:8px auto;
+  min-width:200px;
+}
+.peta-arrow { font-size:28px; color:var(--orange); margin:0; line-height:1.2; }
+.peta-desc { font-size:13px; font-weight:700; opacity:.85; margin-top:4px; }
+.peta-connector { display:flex; flex-direction:column; align-items:center; }
+
+/* ─────────────────────────────────── */
+/*  CP & TP                            */
+/* ─────────────────────────────────── */
+.cp-badge {
+  background:var(--orange); color:#fff; font-size:11px; font-weight:800;
+  padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:6px;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.tp-item {
+  display:flex; gap:12px; align-items:flex-start;
+  background:white; border-radius:16px; padding:14px 16px;
+  margin-bottom:10px; box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.tp-num {
+  background:linear-gradient(135deg,var(--orange),var(--red)); color:#fff;
+  font-family:'Fredoka One',cursive; font-size:18px;
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.tp-label { font-size:12px; color:var(--orange); font-weight:800; text-transform:uppercase; margin-bottom:3px; }
+
+/* ─────────────────────────────────── */
+/*  MATERI                             */
+/* ─────────────────────────────────── */
+.materi-nav {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; justify-content:center;
+}
+.materi-tab {
+  background:white; border:2px solid #FFD0A0; border-radius:30px;
+  padding:8px 16px; font-family:'Fredoka One',cursive; font-size:14px;
+  cursor:pointer; transition:.15s; color:var(--dark);
+}
+.materi-tab.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+.materi-page { display:none; }
+.materi-page.active { display:block; }
+.highlight-box {
+  background:linear-gradient(135deg,#FFD700,#FFA500);
+  border-radius:16px; padding:14px 18px; margin-bottom:14px;
+  font-weight:800; font-size:15px;
+}
+.ciri-item {
+  display:flex; gap:10px; align-items:flex-start;
+  padding:10px 14px; border-radius:14px; margin-bottom:8px;
+  background:white; box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.ciri-item .bullet { color:var(--orange); font-size:22px; flex-shrink:0; }
+.contoh-para {
+  background:white; border-radius:16px; padding:16px 18px;
+  border-left:5px solid var(--orange); margin-bottom:12px;
+  box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.kata-kunci {
+  background:var(--yellow); padding:2px 8px; border-radius:8px;
+  font-weight:800;
+}
+
+/* ─────────────────────────────────── */
+/*  AKTIVITAS 1: TANDAI PIPO           */
+/* ─────────────────────────────────── */
+.aktivitas-header {
+  background:linear-gradient(135deg,#E8322A,#FF7A00);
+  padding:55px 24px 18px; text-align:center;
+}
+.aktivitas-header h2 { font-family:'Fredoka One',cursive; font-size:24px; color:#fff; }
+.aktivitas-header p  { color:rgba(255,255,255,.9); font-size:13px; }
+.level-tabs { display:flex; gap:10px; justify-content:center; margin:16px 0; }
+.level-tab {
+  background:white; border-radius:30px; padding:8px 22px;
+  font-family:'Fredoka One',cursive; font-size:14px;
+  cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.12);
+  border:2px solid #eee; transition:.15s;
+}
+.level-tab.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+.tandai-section { display:none; }
+.tandai-section.active { display:block; }
+.kalimat-list { list-style:none; }
+.kalimat-item {
+  padding:12px 16px; margin-bottom:10px; border-radius:16px;
+  background:white; border:3px solid #FFE0C0; cursor:pointer;
+  font-size:15px; line-height:1.6; font-weight:600;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+  transition:all .2s; position:relative;
+}
+.kalimat-item:hover { border-color:var(--orange); transform:translateX(4px); }
+.kalimat-item.benar { background:#EAFAF1; border-color:var(--green); }
+.kalimat-item.salah { background:#FDECEA; border-color:var(--red); }
+.kalimat-item .feedback-icon {
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  font-size:22px;
+}
+.feedback-popup {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+  background:white; border-radius:24px; padding:24px 32px; text-align:center;
+  box-shadow:0 16px 60px rgba(0,0,0,.25); z-index:999;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  min-width:240px;
+}
+.feedback-popup.show { transform:translate(-50%,-50%) scale(1); }
+.feedback-popup.benar .fb-icon { font-size:48px; }
+.feedback-popup .fb-title { font-family:'Fredoka One',cursive; font-size:26px; margin:8px 0 4px; }
+.feedback-popup .fb-sub   { font-size:14px; color:#666; }
+.feedback-popup .fb-close {
+  margin-top:12px; background:var(--orange); color:#fff;
+  border:none; border-radius:30px; padding:8px 24px;
+  font-family:'Fredoka One',cursive; font-size:15px; cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.2);
+}
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:998; display:none; }
+.overlay.show { display:block; }
+
+/* ─────────────────────────────────── */
+/*  AKTIVITAS 2: URUTKAN PIPO          */
+/* ─────────────────────────────────── */
+.urut-container { padding:0 20px; }
+.urut-kalimat {
+  background:white; border-radius:14px; padding:12px 16px;
+  margin-bottom:8px; border:2px solid #FFD0A0; cursor:grab;
+  font-size:14px; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,.07);
+  display:flex; align-items:center; gap:10px; transition:.2s;
+  user-select:none;
+}
+.urut-kalimat:hover { border-color:var(--orange); transform:scale(1.01); }
+.urut-kalimat.dragging { opacity:.5; }
+.urut-kalimat .drag-handle { font-size:18px; color:#ccc; }
+.urut-kalimat .kalimat-num {
+  background:var(--orange); color:#fff; width:28px; height:28px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-family:'Fredoka One',cursive; font-size:14px; flex-shrink:0;
+}
+.urut-drop-zone {
+  min-height:60px; border:3px dashed #FFD0A0; border-radius:16px;
+  padding:8px; background:#FFFAF5; margin-bottom:10px;
+}
+.urut-answer-area { margin-top:16px; }
+.urut-result { text-align:center; padding:16px; display:none; }
+.urut-result.show { display:block; }
+.urut-result .result-emoji { font-size:52px; }
+.urut-result .result-text { font-family:'Fredoka One',cursive; font-size:24px; margin:8px 0; }
+.check-btn-wrap { text-align:center; margin-top:12px; }
+
+/* ─────────────────────────────────── */
+/*  SOAL                               */
+/* ─────────────────────────────────── */
+.soal-progress {
+  background:white; border-radius:20px; padding:10px 16px;
+  margin-bottom:16px; display:flex; align-items:center; gap:10px;
+}
+.progress-bar-wrap { flex:1; height:12px; background:#FFE0C0; border-radius:6px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--orange),var(--red)); border-radius:6px; transition:.4s; }
+.soal-num { font-family:'Fredoka One',cursive; font-size:15px; color:var(--red); }
+.soal-card {
+  background:white; border-radius:20px; padding:20px;
+  box-shadow:0 4px 16px rgba(0,0,0,.1); margin-bottom:14px;
+}
+.soal-badge {
+  display:inline-block; padding:4px 14px; border-radius:20px;
+  font-size:12px; font-weight:800; text-transform:uppercase;
+  margin-bottom:10px; letter-spacing:.5px;
+}
+.badge-pg { background:var(--blue); color:#fff; }
+.badge-bs { background:var(--purple); color:#fff; }
+.soal-text { font-size:15px; line-height:1.7; font-weight:700; margin-bottom:14px; }
+.soal-para { font-size:14px; line-height:1.7; background:#FFF3E0; border-radius:12px; padding:12px 14px; margin-bottom:14px; border-left:4px solid var(--orange); }
+.pilihan-list { list-style:none; }
+.pilihan-item {
+  padding:12px 16px; margin-bottom:8px; border-radius:14px;
+  background:#F9F3ED; border:2px solid #FFD0A0; cursor:pointer;
+  font-size:14px; font-weight:700; transition:.15s;
+  display:flex; align-items:center; gap:10px;
+}
+.pilihan-item:hover { border-color:var(--orange); background:#FFF3E0; }
+.pilihan-item.correct { background:#EAFAF1; border-color:var(--green); }
+.pilihan-item.wrong   { background:#FDECEA; border-color:var(--red); }
+.pilihan-item.selected { border-color:var(--blue); background:#EBF5FB; }
+.pilihan-letter {
+  background:var(--orange); color:#fff; width:28px; height:28px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-family:'Fredoka One',cursive; font-size:14px; flex-shrink:0;
+}
+.bs-wrap { display:flex; gap:12px; }
+.bs-btn {
+  flex:1; padding:16px; border-radius:16px; border:3px solid #FFD0A0;
+  background:white; font-family:'Fredoka One',cursive; font-size:20px;
+  cursor:pointer; transition:.15s; text-align:center;
+}
+.bs-btn:hover { border-color:var(--orange); background:#FFF3E0; }
+.bs-btn.correct { background:#EAFAF1; border-color:var(--green); }
+.bs-btn.wrong   { background:#FDECEA; border-color:var(--red); }
+.soal-feedback {
+  padding:10px 16px; border-radius:12px; font-weight:800; font-size:14px; margin-top:8px;
+  display:none;
+}
+.soal-feedback.show { display:block; }
+.soal-feedback.benar { background:#EAFAF1; color:#27AE60; }
+.soal-feedback.salah { background:#FDECEA; color:#E8322A; }
+.soal-nav-btn { display:flex; gap:10px; justify-content:center; margin-top:12px; }
+.skor-display {
+  text-align:center; padding:30px;
+}
+.skor-circle {
+  width:130px; height:130px; border-radius:50%;
+  background:linear-gradient(135deg,var(--orange),var(--red));
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin:0 auto 16px;
+  box-shadow:0 8px 0 rgba(0,0,0,.15);
+}
+.skor-angka { font-family:'Fredoka One',cursive; font-size:42px; color:#fff; }
+.skor-dari  { font-size:13px; color:rgba(255,255,255,.8); }
+.skor-title { font-family:'Fredoka One',cursive; font-size:24px; color:var(--red); margin-bottom:6px; }
+.skor-kunci { background:#FFF3E0; border-radius:16px; padding:16px; margin-top:16px; text-align:left; }
+.kunci-item { display:flex; gap:8px; align-items:center; margin-bottom:8px; font-size:13px; font-weight:700; }
+.kunci-num { background:var(--orange); color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Fredoka One',cursive; font-size:12px; flex-shrink:0; }
+
+/* ─────────────────────────────────── */
+/*  PENUTUP                            */
+/* ─────────────────────────────────── */
+.refleksi-item {
+  background:white; border-radius:16px; padding:14px 18px;
+  margin-bottom:10px; box-shadow:0 3px 12px rgba(0,0,0,.07);
+  display:flex; gap:12px; align-items:flex-start;
+}
+.refleksi-num {
+  background:linear-gradient(135deg,var(--orange),var(--red)); color:#fff;
+  font-family:'Fredoka One',cursive; width:32px; height:32px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-size:16px;
+}
+.motivasi-card {
+  background:linear-gradient(135deg,#FFD700,#FF7A00);
+  border-radius:24px; padding:24px; text-align:center;
+  margin-top:16px; box-shadow:0 8px 0 rgba(0,0,0,.15);
+}
+.motivasi-card .m-icon { font-size:48px; margin-bottom:8px; }
+.motivasi-card .m-text { font-family:'Fredoka One',cursive; font-size:20px; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.15); }
+
+/* ─────────────────────────────────── */
+/*  RESPONSIVE                         */
+/* ─────────────────────────────────── */
+@media(max-width:920px) {
+  .screen { width:100vw; min-height:100vh; border-radius:0; }
+  body { align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     AUDIO CONTEXT (via Web Audio API)
+════════════════════════════════════════════ -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════════════════════════════════════
+     1. COVER
+═══════════════════════════════════════════ -->
+<div class="screen active" id="screen-cover">
+  <!-- Decorations -->
+  <div class="deco deco-cloud1 cloud">☁️</div>
+  <div class="deco deco-cloud2 cloud" style="animation-delay:.8s">☁️</div>
+  <div class="deco deco-star1 star">⭐</div>
+  <div class="deco deco-star2 star" style="animation-delay:.4s">✨</div>
+  <div class="deco deco-star3 star" style="animation-delay:.7s">⭐</div>
+  <div class="deco deco-star4 star" style="animation-delay:.2s">✨</div>
+  <div class="deco bubble1 bubble"></div>
+  <div class="deco bubble2 bubble" style="animation-delay:1s"></div>
+
+  <!-- Sound button -->
+  <div class="cover-sound-hint">
+    <button class="nav-btn sound-btn" id="soundToggle" title="Suara On/Off" onclick="toggleSound()">🔊</button>
+  </div>
+
+  <div class="cover-inner">
+    <!-- Mascot SVG -->
+    <div style="margin-bottom:10px">
+      <svg width="185" height="240" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow -->
+  <ellipse cx="100" cy="254" rx="48" ry="7" fill="rgba(0,0,0,0.12)"/>
+
+  <!-- ═══ BODY / HOODIE MERAH ═══ -->
+  <!-- Torso utama -->
+  <path d="M52 160 Q48 185 46 220 Q60 235 100 238 Q140 235 154 220 Q152 185 148 160 Q130 150 100 148 Q70 150 52 160Z" fill="#D92B20"/>
+  <!-- Hoodie tengah gelap -->
+  <path d="M88 160 Q88 185 90 238 Q95 239 100 238 Q105 239 110 238 Q112 185 112 160 Q104 156 100 155 Q96 156 88 160Z" fill="#B82218"/>
+  <!-- Tulisan PIPO -->
+  <text x="100" y="200" text-anchor="middle" font-family="Fredoka One,sans-serif" font-size="18" fill="#FFD700" font-weight="bold" letter-spacing="2">PIPO</text>
+  <!-- Kancing/zipper detail -->
+  <circle cx="100" cy="165" r="3" fill="#B82218"/>
+  <circle cx="100" cy="175" r="3" fill="#B82218"/>
+
+  <!-- ═══ LENGAN KIRI (pegang buku) ═══ -->
+  <path d="M52 160 Q30 165 22 185 Q20 200 28 208 Q36 195 48 188 Q50 175 52 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kiri -->
+  <ellipse cx="24" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M14 206 Q12 215 15 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M24 208 Q24 218 24 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M34 206 Q36 215 33 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- BUKU BIRU di tangan kiri -->
+  <g transform="rotate(8 30 215)">
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="#2471A3"/>
+    <rect x="4" y="200" width="8" height="30" rx="3" fill="#1A5276"/>
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="none" stroke="#1A5276" stroke-width="1.5"/>
+    <line x1="16" y1="208" x2="41" y2="208" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="215" x2="41" y2="215" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="222" x2="41" y2="222" stroke="#7FB3D3" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ LENGAN KANAN ═══ -->
+  <path d="M148 160 Q170 165 178 185 Q180 200 172 208 Q164 195 152 188 Q150 175 148 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kanan -->
+  <ellipse cx="176" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M166 206 Q164 215 167 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M176 208 Q176 218 176 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M186 206 Q188 215 185 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ LEHER ═══ -->
+  <path d="M82 148 Q82 138 100 136 Q118 138 118 148 Q112 155 100 155 Q88 155 82 148Z" fill="#D4853A"/>
+  <!-- Loreng leher -->
+  <path d="M88 140 Q90 136 92 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+  <path d="M108 140 Q110 136 112 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+
+  <!-- ═══ KEPALA HARIMAU ═══ -->
+  <!-- Tengkorak kepala - bentuk harimau -->
+  <ellipse cx="100" cy="95" rx="62" ry="58" fill="#E8922A"/>
+
+  <!-- TELINGA KIRI - lancip seperti harimau sungguhan -->
+  <polygon points="44,58 28,12 66,45" fill="#E8922A"/>
+  <polygon points="47,55 36,20 63,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kiri -->
+  <polygon points="50,52 42,28 60,44" fill="#F5C8A0"/>
+
+  <!-- TELINGA KANAN - lancip -->
+  <polygon points="156,58 172,12 134,45" fill="#E8922A"/>
+  <polygon points="153,55 164,20 137,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kanan -->
+  <polygon points="150,52 158,28 140,44" fill="#F5C8A0"/>
+
+  <!-- LORENG DAHI & KEPALA -->
+  <path d="M72 48 Q76 38 74 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M82 42 Q85 32 83 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 48 Q124 38 126 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 42 Q115 32 117 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Loreng pipi -->
+  <path d="M40 82 Q50 86 46 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M36 96 Q46 98 44 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M160 82 Q150 86 154 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M164 96 Q154 98 156 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- AREA MONCONG putih gading -->
+  <ellipse cx="100" cy="115" rx="36" ry="28" fill="#FFF0D0"/>
+  <!-- Loreng di moncong -->
+  <path d="M72 104 Q76 108 72 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 104 Q124 108 128 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ KACAMATA ═══ -->
+  <!-- Lensa kiri - background putih -->
+  <circle cx="80" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Lensa kanan - background putih -->
+  <circle cx="120" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Frame kacamata kiri (tebal, coklat tua) -->
+  <circle cx="80" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Frame kacamata kanan -->
+  <circle cx="120" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Bridge kacamata (penyambung) -->
+  <path d="M99 97 Q100 93 101 97" stroke="#3D2008" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kiri -->
+  <path d="M61 90 Q50 87 42 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kanan -->
+  <path d="M139 90 Q150 87 158 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- MATA (bola mata coklat gelap) -->
+  <circle cx="80" cy="99" r="12" fill="#2C1A0E"/>
+  <circle cx="120" cy="99" r="12" fill="#2C1A0E"/>
+  <!-- Refleksi mata -->
+  <circle cx="84" cy="95" r="4.5" fill="white"/>
+  <circle cx="124" cy="95" r="4.5" fill="white"/>
+  <circle cx="86" cy="93" r="2" fill="white"/>
+  <circle cx="126" cy="93" r="2" fill="white"/>
+
+  <!-- HIDUNG harimau -->
+  <path d="M92 120 Q100 115 108 120 Q104 128 100 130 Q96 128 92 120Z" fill="#D04010"/>
+  <ellipse cx="100" cy="118" rx="10" ry="6" fill="#D04010"/>
+  <!-- Garis hidung ke mulut -->
+  <line x1="100" y1="124" x2="100" y2="130" stroke="#8B3A0A" stroke-width="2"/>
+
+  <!-- MULUT senyum harimau -->
+  <path d="M82 132 Q100 145 118 132" stroke="#8B3A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M82 132 Q79 136 82 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 132 Q121 136 118 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- KUMIS kiri -->
+  <line x1="44" y1="120" x2="76" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="42" y1="128" x2="76" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="46" y1="136" x2="76" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+  <!-- KUMIS kanan -->
+  <line x1="156" y1="120" x2="124" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="158" y1="128" x2="124" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="154" y1="136" x2="124" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ═══ TOPI WISUDA ═══ -->
+  <!-- Brim/pinggiran lebar hitam -->
+  <ellipse cx="100" cy="46" rx="72" ry="16" fill="#1A2744"/>
+  <!-- Highlight brim -->
+  <ellipse cx="100" cy="43" rx="70" ry="9" fill="#233058"/>
+  <!-- Kotak atas topi (mortarboard) -->
+  <rect x="42" y="10" width="116" height="42" rx="5" fill="#1A2744"/>
+  <!-- Highlight atas topi -->
+  <rect x="44" y="12" width="112" height="10" rx="4" fill="#233058" opacity="0.5"/>
+  <!-- Tepi topi -->
+  <rect x="40" y="8" width="120" height="10" rx="5" fill="#1A2744"/>
+  <!-- Tali tassel kuning -->
+  <line x1="158" y1="10" x2="168" y2="46" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Pompom kuning -->
+  <circle cx="170" cy="49" r="10" fill="#FFD700"/>
+  <line x1="170" y1="59" x2="166" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="170" y2="78" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="174" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+    </div>
+
+    <div class="cover-badge">🎮 Game Edukasi Bahasa Indonesia</div>
+    <div class="cover-title">PIPO</div>
+    <div class="cover-subtitle">Pintar Ide Pokok</div>
+    <div class="cover-tagline">🌟 Ayo Belajar Ide Pokok dengan Seru! 🌟</div>
+    <button class="btn btn-yellow" onclick="goTo('menu')" style="font-size:22px;padding:16px 48px">
+      🚀 MULAI
+    </button>
+    <div class="cover-info">Kelas 5 SD · Bahasa Indonesia · By Fathna Mafazah</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2. MENU UTAMA
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-menu">
+  <div class="menu-header">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('cover')" title="Kembali ke Cover">🏠</button>
+      <div class="nav-right">
+        <button class="nav-btn sound-btn" onclick="toggleSound()" title="Suara">🔊</button>
+        <button class="nav-btn" onclick="toggleSound()" title="Pengaturan">⚙️</button>
+      </div>
+    </div>
+    <div class="menu-header-title">🎓 PIPO – Menu Utama</div>
+    <div class="menu-header-sub">Pilih menu yang ingin kamu pelajari!</div>
+  </div>
+  <div style="padding:0 20px 10px;display:flex;justify-content:center;gap:10px;align-items:center">
+    <!-- Small mascot in menu -->
+    <svg width="95" height="115" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow -->
+  <ellipse cx="100" cy="254" rx="48" ry="7" fill="rgba(0,0,0,0.12)"/>
+
+  <!-- ═══ BODY / HOODIE MERAH ═══ -->
+  <!-- Torso utama -->
+  <path d="M52 160 Q48 185 46 220 Q60 235 100 238 Q140 235 154 220 Q152 185 148 160 Q130 150 100 148 Q70 150 52 160Z" fill="#D92B20"/>
+  <!-- Hoodie tengah gelap -->
+  <path d="M88 160 Q88 185 90 238 Q95 239 100 238 Q105 239 110 238 Q112 185 112 160 Q104 156 100 155 Q96 156 88 160Z" fill="#B82218"/>
+  <!-- Tulisan PIPO -->
+  <text x="100" y="200" text-anchor="middle" font-family="Fredoka One,sans-serif" font-size="18" fill="#FFD700" font-weight="bold" letter-spacing="2">PIPO</text>
+  <!-- Kancing/zipper detail -->
+  <circle cx="100" cy="165" r="3" fill="#B82218"/>
+  <circle cx="100" cy="175" r="3" fill="#B82218"/>
+
+  <!-- ═══ LENGAN KIRI (pegang buku) ═══ -->
+  <path d="M52 160 Q30 165 22 185 Q20 200 28 208 Q36 195 48 188 Q50 175 52 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kiri -->
+  <ellipse cx="24" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M14 206 Q12 215 15 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M24 208 Q24 218 24 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M34 206 Q36 215 33 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- BUKU BIRU di tangan kiri -->
+  <g transform="rotate(8 30 215)">
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="#2471A3"/>
+    <rect x="4" y="200" width="8" height="30" rx="3" fill="#1A5276"/>
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="none" stroke="#1A5276" stroke-width="1.5"/>
+    <line x1="16" y1="208" x2="41" y2="208" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="215" x2="41" y2="215" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="222" x2="41" y2="222" stroke="#7FB3D3" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ LENGAN KANAN ═══ -->
+  <path d="M148 160 Q170 165 178 185 Q180 200 172 208 Q164 195 152 188 Q150 175 148 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kanan -->
+  <ellipse cx="176" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M166 206 Q164 215 167 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M176 208 Q176 218 176 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M186 206 Q188 215 185 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ LEHER ═══ -->
+  <path d="M82 148 Q82 138 100 136 Q118 138 118 148 Q112 155 100 155 Q88 155 82 148Z" fill="#D4853A"/>
+  <!-- Loreng leher -->
+  <path d="M88 140 Q90 136 92 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+  <path d="M108 140 Q110 136 112 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+
+  <!-- ═══ KEPALA HARIMAU ═══ -->
+  <!-- Tengkorak kepala - bentuk harimau -->
+  <ellipse cx="100" cy="95" rx="62" ry="58" fill="#E8922A"/>
+
+  <!-- TELINGA KIRI - lancip seperti harimau sungguhan -->
+  <polygon points="44,58 28,12 66,45" fill="#E8922A"/>
+  <polygon points="47,55 36,20 63,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kiri -->
+  <polygon points="50,52 42,28 60,44" fill="#F5C8A0"/>
+
+  <!-- TELINGA KANAN - lancip -->
+  <polygon points="156,58 172,12 134,45" fill="#E8922A"/>
+  <polygon points="153,55 164,20 137,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kanan -->
+  <polygon points="150,52 158,28 140,44" fill="#F5C8A0"/>
+
+  <!-- LORENG DAHI & KEPALA -->
+  <path d="M72 48 Q76 38 74 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M82 42 Q85 32 83 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 48 Q124 38 126 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 42 Q115 32 117 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Loreng pipi -->
+  <path d="M40 82 Q50 86 46 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M36 96 Q46 98 44 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M160 82 Q150 86 154 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M164 96 Q154 98 156 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- AREA MONCONG putih gading -->
+  <ellipse cx="100" cy="115" rx="36" ry="28" fill="#FFF0D0"/>
+  <!-- Loreng di moncong -->
+  <path d="M72 104 Q76 108 72 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 104 Q124 108 128 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ KACAMATA ═══ -->
+  <!-- Lensa kiri - background putih -->
+  <circle cx="80" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Lensa kanan - background putih -->
+  <circle cx="120" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Frame kacamata kiri (tebal, coklat tua) -->
+  <circle cx="80" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Frame kacamata kanan -->
+  <circle cx="120" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Bridge kacamata (penyambung) -->
+  <path d="M99 97 Q100 93 101 97" stroke="#3D2008" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kiri -->
+  <path d="M61 90 Q50 87 42 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kanan -->
+  <path d="M139 90 Q150 87 158 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- MATA (bola mata coklat gelap) -->
+  <circle cx="80" cy="99" r="12" fill="#2C1A0E"/>
+  <circle cx="120" cy="99" r="12" fill="#2C1A0E"/>
+  <!-- Refleksi mata -->
+  <circle cx="84" cy="95" r="4.5" fill="white"/>
+  <circle cx="124" cy="95" r="4.5" fill="white"/>
+  <circle cx="86" cy="93" r="2" fill="white"/>
+  <circle cx="126" cy="93" r="2" fill="white"/>
+
+  <!-- HIDUNG harimau -->
+  <path d="M92 120 Q100 115 108 120 Q104 128 100 130 Q96 128 92 120Z" fill="#D04010"/>
+  <ellipse cx="100" cy="118" rx="10" ry="6" fill="#D04010"/>
+  <!-- Garis hidung ke mulut -->
+  <line x1="100" y1="124" x2="100" y2="130" stroke="#8B3A0A" stroke-width="2"/>
+
+  <!-- MULUT senyum harimau -->
+  <path d="M82 132 Q100 145 118 132" stroke="#8B3A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M82 132 Q79 136 82 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 132 Q121 136 118 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- KUMIS kiri -->
+  <line x1="44" y1="120" x2="76" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="42" y1="128" x2="76" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="46" y1="136" x2="76" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+  <!-- KUMIS kanan -->
+  <line x1="156" y1="120" x2="124" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="158" y1="128" x2="124" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="154" y1="136" x2="124" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ═══ TOPI WISUDA ═══ -->
+  <!-- Brim/pinggiran lebar hitam -->
+  <ellipse cx="100" cy="46" rx="72" ry="16" fill="#1A2744"/>
+  <!-- Highlight brim -->
+  <ellipse cx="100" cy="43" rx="70" ry="9" fill="#233058"/>
+  <!-- Kotak atas topi (mortarboard) -->
+  <rect x="42" y="10" width="116" height="42" rx="5" fill="#1A2744"/>
+  <!-- Highlight atas topi -->
+  <rect x="44" y="12" width="112" height="10" rx="4" fill="#233058" opacity="0.5"/>
+  <!-- Tepi topi -->
+  <rect x="40" y="8" width="120" height="10" rx="5" fill="#1A2744"/>
+  <!-- Tali tassel kuning -->
+  <line x1="158" y1="10" x2="168" y2="46" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Pompom kuning -->
+  <circle cx="170" cy="49" r="10" fill="#FFD700"/>
+  <line x1="170" y1="59" x2="166" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="170" y2="78" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="174" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+    <div style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--dark)">
+      Halo! Aku PIPO,<br>teman belajarmu! 👋
+    </div>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card c1" onclick="goTo('identitas')">
+      <div class="icon">🪪</div>
+      <div class="label">Identitas</div>
+    </div>
+    <div class="menu-card c2" onclick="goTo('panduan')">
+      <div class="icon">📖</div>
+      <div class="label">Panduan</div>
+    </div>
+    <div class="menu-card c3" onclick="goTo('cptp')">
+      <div class="icon">🎯</div>
+      <div class="label">CP & TP</div>
+    </div>
+    <div class="menu-card c4" onclick="goTo('materi')">
+      <div class="icon">📚</div>
+      <div class="label">Materi & Peta Konsep</div>
+    </div>
+    <div class="menu-card c5" onclick="goTo('aktivitas')">
+      <div class="icon">🎮</div>
+      <div class="label">Aktivitas Interaktif</div>
+    </div>
+    <div class="menu-card c6" onclick="goTo('soal')">
+      <div class="icon">✏️</div>
+      <div class="label">Latihan Soal</div>
+    </div>
+    <div class="menu-card c7" onclick="goTo('penutup')" style="grid-column:span 3">
+      <div class="icon">🌟</div>
+      <div class="label">Penutup</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     3. IDENTITAS
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-identitas">
+  <div style="background:linear-gradient(135deg,#E8322A,#FF7A00);padding:55px 24px 20px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')" title="Menu Utama">🏠</button>
+      <div class="nav-right">
+        <button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button>
+      </div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">🪪 Identitas Media</h2>
+  </div>
+  <div class="content-scroll" style="padding-top:20px">
+    <div style="display:flex;justify-content:center;margin-bottom:16px">
+      <svg width="125" height="150" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow -->
+  <ellipse cx="100" cy="254" rx="48" ry="7" fill="rgba(0,0,0,0.12)"/>
+
+  <!-- ═══ BODY / HOODIE MERAH ═══ -->
+  <!-- Torso utama -->
+  <path d="M52 160 Q48 185 46 220 Q60 235 100 238 Q140 235 154 220 Q152 185 148 160 Q130 150 100 148 Q70 150 52 160Z" fill="#D92B20"/>
+  <!-- Hoodie tengah gelap -->
+  <path d="M88 160 Q88 185 90 238 Q95 239 100 238 Q105 239 110 238 Q112 185 112 160 Q104 156 100 155 Q96 156 88 160Z" fill="#B82218"/>
+  <!-- Tulisan PIPO -->
+  <text x="100" y="200" text-anchor="middle" font-family="Fredoka One,sans-serif" font-size="18" fill="#FFD700" font-weight="bold" letter-spacing="2">PIPO</text>
+  <!-- Kancing/zipper detail -->
+  <circle cx="100" cy="165" r="3" fill="#B82218"/>
+  <circle cx="100" cy="175" r="3" fill="#B82218"/>
+
+  <!-- ═══ LENGAN KIRI (pegang buku) ═══ -->
+  <path d="M52 160 Q30 165 22 185 Q20 200 28 208 Q36 195 48 188 Q50 175 52 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kiri -->
+  <ellipse cx="24" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M14 206 Q12 215 15 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M24 208 Q24 218 24 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M34 206 Q36 215 33 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- BUKU BIRU di tangan kiri -->
+  <g transform="rotate(8 30 215)">
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="#2471A3"/>
+    <rect x="4" y="200" width="8" height="30" rx="3" fill="#1A5276"/>
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="none" stroke="#1A5276" stroke-width="1.5"/>
+    <line x1="16" y1="208" x2="41" y2="208" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="215" x2="41" y2="215" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="222" x2="41" y2="222" stroke="#7FB3D3" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ LENGAN KANAN ═══ -->
+  <path d="M148 160 Q170 165 178 185 Q180 200 172 208 Q164 195 152 188 Q150 175 148 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kanan -->
+  <ellipse cx="176" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M166 206 Q164 215 167 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M176 208 Q176 218 176 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M186 206 Q188 215 185 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ LEHER ═══ -->
+  <path d="M82 148 Q82 138 100 136 Q118 138 118 148 Q112 155 100 155 Q88 155 82 148Z" fill="#D4853A"/>
+  <!-- Loreng leher -->
+  <path d="M88 140 Q90 136 92 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+  <path d="M108 140 Q110 136 112 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+
+  <!-- ═══ KEPALA HARIMAU ═══ -->
+  <!-- Tengkorak kepala - bentuk harimau -->
+  <ellipse cx="100" cy="95" rx="62" ry="58" fill="#E8922A"/>
+
+  <!-- TELINGA KIRI - lancip seperti harimau sungguhan -->
+  <polygon points="44,58 28,12 66,45" fill="#E8922A"/>
+  <polygon points="47,55 36,20 63,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kiri -->
+  <polygon points="50,52 42,28 60,44" fill="#F5C8A0"/>
+
+  <!-- TELINGA KANAN - lancip -->
+  <polygon points="156,58 172,12 134,45" fill="#E8922A"/>
+  <polygon points="153,55 164,20 137,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kanan -->
+  <polygon points="150,52 158,28 140,44" fill="#F5C8A0"/>
+
+  <!-- LORENG DAHI & KEPALA -->
+  <path d="M72 48 Q76 38 74 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M82 42 Q85 32 83 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 48 Q124 38 126 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 42 Q115 32 117 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Loreng pipi -->
+  <path d="M40 82 Q50 86 46 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M36 96 Q46 98 44 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M160 82 Q150 86 154 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M164 96 Q154 98 156 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- AREA MONCONG putih gading -->
+  <ellipse cx="100" cy="115" rx="36" ry="28" fill="#FFF0D0"/>
+  <!-- Loreng di moncong -->
+  <path d="M72 104 Q76 108 72 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 104 Q124 108 128 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ KACAMATA ═══ -->
+  <!-- Lensa kiri - background putih -->
+  <circle cx="80" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Lensa kanan - background putih -->
+  <circle cx="120" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Frame kacamata kiri (tebal, coklat tua) -->
+  <circle cx="80" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Frame kacamata kanan -->
+  <circle cx="120" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Bridge kacamata (penyambung) -->
+  <path d="M99 97 Q100 93 101 97" stroke="#3D2008" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kiri -->
+  <path d="M61 90 Q50 87 42 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kanan -->
+  <path d="M139 90 Q150 87 158 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- MATA (bola mata coklat gelap) -->
+  <circle cx="80" cy="99" r="12" fill="#2C1A0E"/>
+  <circle cx="120" cy="99" r="12" fill="#2C1A0E"/>
+  <!-- Refleksi mata -->
+  <circle cx="84" cy="95" r="4.5" fill="white"/>
+  <circle cx="124" cy="95" r="4.5" fill="white"/>
+  <circle cx="86" cy="93" r="2" fill="white"/>
+  <circle cx="126" cy="93" r="2" fill="white"/>
+
+  <!-- HIDUNG harimau -->
+  <path d="M92 120 Q100 115 108 120 Q104 128 100 130 Q96 128 92 120Z" fill="#D04010"/>
+  <ellipse cx="100" cy="118" rx="10" ry="6" fill="#D04010"/>
+  <!-- Garis hidung ke mulut -->
+  <line x1="100" y1="124" x2="100" y2="130" stroke="#8B3A0A" stroke-width="2"/>
+
+  <!-- MULUT senyum harimau -->
+  <path d="M82 132 Q100 145 118 132" stroke="#8B3A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M82 132 Q79 136 82 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 132 Q121 136 118 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- KUMIS kiri -->
+  <line x1="44" y1="120" x2="76" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="42" y1="128" x2="76" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="46" y1="136" x2="76" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+  <!-- KUMIS kanan -->
+  <line x1="156" y1="120" x2="124" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="158" y1="128" x2="124" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="154" y1="136" x2="124" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ═══ TOPI WISUDA ═══ -->
+  <!-- Brim/pinggiran lebar hitam -->
+  <ellipse cx="100" cy="46" rx="72" ry="16" fill="#1A2744"/>
+  <!-- Highlight brim -->
+  <ellipse cx="100" cy="43" rx="70" ry="9" fill="#233058"/>
+  <!-- Kotak atas topi (mortarboard) -->
+  <rect x="42" y="10" width="116" height="42" rx="5" fill="#1A2744"/>
+  <!-- Highlight atas topi -->
+  <rect x="44" y="12" width="112" height="10" rx="4" fill="#233058" opacity="0.5"/>
+  <!-- Tepi topi -->
+  <rect x="40" y="8" width="120" height="10" rx="5" fill="#1A2744"/>
+  <!-- Tali tassel kuning -->
+  <line x1="158" y1="10" x2="168" y2="46" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Pompom kuning -->
+  <circle cx="170" cy="49" r="10" fill="#FFD700"/>
+  <line x1="170" y1="59" x2="166" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="170" y2="78" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="174" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+    </div>
+    <div class="card">
+      <table class="id-table">
+        <tr><td>📌 Judul Media</td><td><strong>PIPO (Pintar Ide Pokok)</strong></td></tr>
+        <tr><td>📚 Mata Pelajaran</td><td>Bahasa Indonesia</td></tr>
+        <tr><td>🏫 Kelas</td><td>V (Lima) SD</td></tr>
+        <tr><td>📖 Materi</td><td>Menentukan Ide Pokok Paragraf</td></tr>
+        <tr><td>🎓 Kurikulum</td><td>Kurikulum Merdeka – Fase C</td></tr>
+        <tr><td>✍️ Pembuat</td><td><strong>Fathna Mafazah</strong></td></tr>
+        <tr><td>🎯 Jenis Media</td><td>Media Pembelajaran Digital Interaktif Berbasis Game</td></tr>
+        <tr><td>💻 Platform</td><td>Web Browser (HTML Interaktif)</td></tr>
+      </table>
+    </div>
+    <div class="card card-orange" style="text-align:center">
+      <div style="font-size:32px">🐯✨</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;margin-top:8px">
+        "Belajar Menyenangkan, Prestasi Gemilang!"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. PANDUAN PENGGUNAAN
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-panduan">
+  <div style="background:linear-gradient(135deg,#FF7A00,#FFB347);padding:55px 24px 20px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right"><button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button></div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">📖 Panduan Penggunaan</h2>
+  </div>
+  <div class="content-scroll" style="padding-top:20px">
+    <div class="guide-item">
+      <div class="guide-num">1</div>
+      <div><strong>Mulai dari Cover</strong><br><span style="font-size:14px;color:#666">Tekan tombol MULAI untuk masuk ke Menu Utama.</span></div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-num">2</div>
+      <div><strong>Pilih Menu</strong><br><span style="font-size:14px;color:#666">Klik salah satu menu yang ingin kamu buka. Kamu bisa memilih secara bebas!</span></div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-num">3</div>
+      <div><strong>Pelajari Materi</strong><br><span style="font-size:14px;color:#666">Baca materi dan peta konsep sebelum mengerjakan aktivitas dan soal.</span></div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-num">4</div>
+      <div><strong>Kerjakan Aktivitas & Soal</strong><br><span style="font-size:14px;color:#666">Ikuti petunjuk di setiap aktivitas. Jangan takut salah, kamu bisa coba lagi!</span></div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-num">5</div>
+      <div><strong>Lihat Skor & Penutup</strong><br><span style="font-size:14px;color:#666">Cek nilaimu di akhir soal dan baca pesan motivasi di Penutup.</span></div>
+    </div>
+    <div class="card" style="margin-top:6px">
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--red);margin-bottom:10px">🔑 Ikon & Tombol</div>
+      <div class="guide-icon-row">
+        <div class="guide-icon-item"><span class="ico">🏠</span> Kembali ke Menu</div>
+        <div class="guide-icon-item"><span class="ico">⬅️</span> Halaman Sebelumnya</div>
+        <div class="guide-icon-item"><span class="ico">➡️</span> Halaman Berikutnya</div>
+        <div class="guide-icon-item"><span class="ico">✔️</span> Selesai / Submit</div>
+        <div class="guide-icon-item"><span class="ico">🔊</span> Suara Nyala</div>
+        <div class="guide-icon-item"><span class="ico">🔇</span> Suara Mati</div>
+        <div class="guide-icon-item"><span class="ico">⚙️</span> Pengaturan</div>
+        <div class="guide-icon-item"><span class="ico">🟢</span> Jawaban Benar</div>
+        <div class="guide-icon-item"><span class="ico">🔴</span> Jawaban Salah</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     5. CP & TP
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-cptp">
+  <div style="background:linear-gradient(135deg,#F39C12,#E67E22);padding:55px 24px 20px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right"><button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button></div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">🎯 CP & Tujuan Pembelajaran</h2>
+  </div>
+  <div class="content-scroll" style="padding-top:20px">
+    <div class="card">
+      <div class="cp-badge">📜 Capaian Pembelajaran – Fase C</div>
+      <div style="font-size:14px;line-height:1.8;font-weight:600;margin-top:8px">
+        Peserta didik mampu <strong>membaca kata-kata dengan berbagai pola kombinasi huruf dengan fasih</strong> serta memahami informasi dan kosakata baru yang memiliki makna denotatif, literal, konotatif, dan kiasan untuk mengidentifikasi objek, fenomena, dan karakter. Peserta didik mampu <strong>mengidentifikasi ide pokok dari teks deskripsi, narasi, dan eksposisi</strong> serta nilai-nilai yang terkandung dalam teks sastra.
+      </div>
+      <div style="font-size:12px;color:#999;margin-top:8px">
+        📌 Sumber: guru.kemendikdasmen.go.id – Bahasa Indonesia Fase C
+      </div>
+    </div>
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--red);margin:10px 0 12px">🎯 Tujuan Pembelajaran (ABCD)</div>
+    <div class="tp-item">
+      <div class="tp-num">1</div>
+      <div>
+        <div class="tp-label">TP 1 – Menjelaskan Pengertian</div>
+        <div style="font-size:14px;line-height:1.7;font-weight:600">
+          <strong>Siswa kelas 5 SD</strong> mampu <strong>menjelaskan pengertian ide pokok dan kalimat utama</strong> dari sebuah paragraf <strong>dengan kata-kata sendiri</strong>, setelah membaca materi dalam media PIPO, dengan <strong>benar dan lengkap</strong>.
+        </div>
+      </div>
+    </div>
+    <div class="tp-item">
+      <div class="tp-num">2</div>
+      <div>
+        <div class="tp-label">TP 2 – Mengidentifikasi</div>
+        <div style="font-size:14px;line-height:1.7;font-weight:600">
+          <strong>Siswa kelas 5 SD</strong> mampu <strong>mengidentifikasi dan menandai kalimat utama</strong> (ide pokok) dalam paragraf deduktif, induktif, dan campuran, <strong>melalui aktivitas interaktif Tandai PIPO</strong>, dengan tingkat ketepatan minimal <strong>80%</strong>.
+        </div>
+      </div>
+    </div>
+    <div class="tp-item">
+      <div class="tp-num">3</div>
+      <div>
+        <div class="tp-label">TP 3 – Menyusun & Menentukan</div>
+        <div style="font-size:14px;line-height:1.7;font-weight:600">
+          <strong>Siswa kelas 5 SD</strong> mampu <strong>menyusun kalimat acak menjadi paragraf padu</strong> dan <strong>menentukan ide pokoknya</strong>, <strong>melalui aktivitas Urutkan PIPO</strong>, dengan <strong>urutan yang tepat dan skor minimal 75</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     6. MATERI & PETA KONSEP
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-materi">
+  <div style="background:linear-gradient(135deg,#27AE60,#2ECC71);padding:55px 24px 20px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right"><button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button></div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">📚 Materi & Peta Konsep</h2>
+  </div>
+  <div class="content-scroll" style="padding-top:16px">
+    <!-- TAB NAVIGATION -->
+    <div class="materi-nav">
+      <div class="materi-tab active" onclick="switchMateri('peta')">🗺️ Peta Konsep</div>
+      <div class="materi-tab" onclick="switchMateri('pengertian')">💡 Pengertian</div>
+      <div class="materi-tab" onclick="switchMateri('ciri')">✅ Ciri-ciri</div>
+      <div class="materi-tab" onclick="switchMateri('cara')">🔍 Cara Menentukan</div>
+      <div class="materi-tab" onclick="switchMateri('contoh')">📝 Contoh</div>
+    </div>
+
+    <!-- PETA KONSEP -->
+    <div class="materi-page active" id="materi-peta">
+      <div class="peta-wrap">
+        <div class="peta-connector">
+          <div class="peta-box card-red" style="color:#fff">
+            🌟 Paragraf
+            <div class="peta-desc">Kumpulan kalimat yang padu</div>
+          </div>
+          <div class="peta-arrow">↓</div>
+          <div style="display:flex;gap:16px;justify-content:center">
+            <div class="peta-connector">
+              <div class="peta-box card-orange" style="color:#fff;min-width:160px">
+                🔑 Kalimat Utama
+                <div class="peta-desc">Memuat ide pokok</div>
+              </div>
+              <div class="peta-arrow">↓</div>
+              <div class="peta-box card-yellow" style="min-width:160px">
+                💡 IDE POKOK
+                <div class="peta-desc">Inti/gagasan utama</div>
+              </div>
+            </div>
+            <div class="peta-connector">
+              <div class="peta-box card-green" style="min-width:160px">
+                📎 Kalimat Penjelas
+                <div class="peta-desc">Mendukung ide pokok</div>
+              </div>
+              <div class="peta-arrow">↓</div>
+              <div class="peta-box card-blue" style="min-width:160px;color:#fff">
+                🔎 Detail & Fakta
+                <div class="peta-desc">Contoh, uraian, data</div>
+              </div>
+            </div>
+          </div>
+          <div class="peta-arrow">↓</div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <div class="peta-box" style="background:linear-gradient(135deg,#9B59B6,#8E44AD);color:#fff;min-width:120px">
+              🔝 Deduktif
+              <div class="peta-desc">Ide pokok di awal</div>
+            </div>
+            <div class="peta-box" style="background:linear-gradient(135deg,#E91E8C,#C2185B);color:#fff;min-width:120px">
+              🔚 Induktif
+              <div class="peta-desc">Ide pokok di akhir</div>
+            </div>
+            <div class="peta-box" style="background:linear-gradient(135deg,#00BCD4,#0097A7);color:#fff;min-width:120px">
+              🔄 Campuran
+              <div class="peta-desc">Ide pokok awal & akhir</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENGERTIAN -->
+    <div class="materi-page" id="materi-pengertian">
+      <div class="highlight-box">
+        💡 <strong>Ide Pokok</strong> adalah gagasan utama atau inti dari sebuah paragraf yang menjadi dasar pengembangan paragraf tersebut.
+      </div>
+      <div class="card" style="margin-bottom:10px">
+        <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--orange);margin-bottom:8px">📌 Kalimat Utama</div>
+        <p style="font-size:14px;line-height:1.8;font-weight:600">Kalimat utama adalah kalimat yang mengandung ide pokok. Kalimat ini biasanya bersifat <strong>umum</strong> dan menjadi "rumah" bagi ide pokok paragraf.</p>
+      </div>
+      <div class="card">
+        <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--green);margin-bottom:8px">📎 Kalimat Penjelas</div>
+        <p style="font-size:14px;line-height:1.8;font-weight:600">Kalimat penjelas adalah kalimat-kalimat yang berfungsi mendukung, menguraikan, dan memperjelas ide pokok. Biasanya bersifat <strong>khusus dan spesifik</strong>.</p>
+      </div>
+      <div class="card card-blue" style="margin-top:6px">
+        <div style="font-size:13px;font-weight:700">🎯 Mudah diingat: Ide Pokok = Gagasan Terpenting = Inti Paragraf</div>
+      </div>
+    </div>
+
+    <!-- CIRI-CIRI -->
+    <div class="materi-page" id="materi-ciri">
+      <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--red);margin-bottom:12px">✅ Ciri-ciri Ide Pokok</div>
+      <div class="ciri-item"><span class="bullet">⭐</span><div><strong>Bersifat umum</strong> – Mencakup seluruh isi paragraf, tidak terlalu spesifik atau terlalu sempit.</div></div>
+      <div class="ciri-item"><span class="bullet">⭐</span><div><strong>Dapat berdiri sendiri</strong> – Jika dibaca sendiri, kalimat utama sudah dapat dipahami tanpa kalimat lain.</div></div>
+      <div class="ciri-item"><span class="bullet">⭐</span><div><strong>Tidak mengandung kata penghubung penjelasan</strong> – Tidak diawali kata seperti "misalnya, contohnya, selain itu, bahkan".</div></div>
+      <div class="ciri-item"><span class="bullet">⭐</span><div><strong>Ada di posisi tertentu</strong> – Bisa di awal (deduktif), akhir (induktif), atau awal dan akhir (campuran).</div></div>
+      <div class="ciri-item"><span class="bullet">⭐</span><div><strong>Berupa kalimat lengkap</strong> – Memiliki subjek dan predikat yang jelas.</div></div>
+      <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--blue);margin:14px 0 10px">📌 Ciri-ciri Kalimat Penjelas</div>
+      <div class="ciri-item"><span class="bullet">🔹</span><div>Bersifat khusus (berisi contoh, fakta, atau rincian)</div></div>
+      <div class="ciri-item"><span class="bullet">🔹</span><div>Tidak dapat berdiri sendiri (selalu berkaitan dengan kalimat utama)</div></div>
+      <div class="ciri-item"><span class="bullet">🔹</span><div>Sering diawali kata: misalnya, contohnya, selain itu, bahkan, adapun</div></div>
+    </div>
+
+    <!-- CARA MENENTUKAN -->
+    <div class="materi-page" id="materi-cara">
+      <div style="font-family:'Fredoka One',cursify;font-size:17px;color:var(--red);margin-bottom:12px">🔍 Cara Menentukan Ide Pokok</div>
+      <div class="guide-item" style="margin-bottom:10px">
+        <div class="guide-num" style="background:var(--green)">1</div>
+        <div><strong>Baca paragraf dengan seksama</strong><br><span style="font-size:13px;color:#555">Pahami isi seluruh paragraf terlebih dahulu sebelum menentukan ide pokok.</span></div>
+      </div>
+      <div class="guide-item" style="margin-bottom:10px">
+        <div class="guide-num" style="background:var(--blue)">2</div>
+        <div><strong>Temukan kalimat utama</strong><br><span style="font-size:13px;color:#555">Cari kalimat yang paling umum dan mencakup seluruh isi paragraf.</span></div>
+      </div>
+      <div class="guide-item" style="margin-bottom:10px">
+        <div class="guide-num" style="background:var(--orange)">3</div>
+        <div><strong>Periksa posisi ide pokok</strong><br><span style="font-size:13px;color:#555">Cek apakah ada di awal, akhir, atau awal dan akhir paragraf.</span></div>
+      </div>
+      <div class="guide-item" style="margin-bottom:10px">
+        <div class="guide-num" style="background:var(--red)">4</div>
+        <div><strong>Bedakan kalimat utama vs. penjelas</strong><br><span style="font-size:13px;color:#555">Kalimat penjelas selalu mendukung kalimat utama, bukan sebaliknya.</span></div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-num" style="background:var(--purple)">5</div>
+        <div><strong>Rumuskan ide pokok</strong><br><span style="font-size:13px;color:#555">Tuliskan atau simpulkan gagasan utama dari kalimat utama yang kamu temukan.</span></div>
+      </div>
+    </div>
+
+    <!-- CONTOH -->
+    <div class="materi-page" id="materi-contoh">
+      <div style="font-family:'Fredoka One',cursify;font-size:15px;color:var(--red);margin-bottom:10px">📝 Contoh Paragraf & Ide Pokok</div>
+      <div class="contoh-para">
+        <div style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:6px">📗 Paragraf Deduktif (ide pokok di awal)</div>
+        <p style="font-size:14px;line-height:1.8;font-weight:600"><span class="kata-kunci">Harimau adalah hewan yang dilindungi di Indonesia.</span> Populasinya terus menurun akibat perburuan liar. Habitatnya juga semakin sempit karena hutan banyak yang ditebang. Oleh karena itu, pemerintah menetapkan harimau sebagai satwa yang harus dilindungi.</p>
+        <div style="background:#EAFAF1;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:13px;font-weight:700;color:#27AE60">
+          ✅ Ide Pokok: Harimau adalah hewan yang dilindungi di Indonesia.
+        </div>
+      </div>
+      <div class="contoh-para">
+        <div style="font-size:12px;font-weight:800;color:var(--purple);margin-bottom:6px">📘 Paragraf Induktif (ide pokok di akhir)</div>
+        <p style="font-size:14px;line-height:1.8;font-weight:600">Budi selalu rajin belajar setiap hari. Ia tidak pernah absen mengerjakan PR. Setiap ulangan, ia mendapat nilai yang bagus. Guru-gurunya juga sangat menyukainya. <span class="kata-kunci">Oleh karena itu, Budi adalah murid teladan di kelasnya.</span></p>
+        <div style="background:#EBF5FB;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:13px;font-weight:700;color:#2980B9">
+          ✅ Ide Pokok: Budi adalah murid teladan di kelasnya.
+        </div>
+      </div>
+      <div class="contoh-para">
+        <div style="font-size:12px;font-weight:800;color:#E91E8C;margin-bottom:6px">📙 Paragraf Campuran (ide pokok di awal & akhir)</div>
+        <p style="font-size:14px;line-height:1.8;font-weight:600"><span class="kata-kunci">Menjaga kebersihan lingkungan adalah kewajiban semua warga.</span> Sampah yang berserakan dapat menyebabkan banjir. Nyamuk berkembang biak di genangan air kotor. Penyakit pun mudah menyebar di lingkungan yang kotor. <span class="kata-kunci">Maka, setiap warga harus aktif menjaga kebersihan lingkungan sekitarnya.</span></p>
+        <div style="background:#FDF2F8;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:13px;font-weight:700;color:#E91E8C">
+          ✅ Ide Pokok: Menjaga kebersihan lingkungan adalah kewajiban semua warga.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     7. AKTIVITAS INTERAKTIF
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-aktivitas">
+  <div class="aktivitas-header">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right">
+        <button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button>
+      </div>
+    </div>
+    <h2>🎮 Aktivitas Interaktif</h2>
+    <p>Pilih aktivitas yang ingin kamu coba!</p>
+  </div>
+  <div class="content-scroll" style="padding-top:16px">
+    <!-- Aktivitas selector -->
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:16px">
+      <button class="btn btn-red" id="btn-akt1" onclick="switchAktivitas(1)" style="font-size:15px;padding:10px 24px">🖊️ Tandai PIPO</button>
+      <button class="btn btn-orange" id="btn-akt2" onclick="switchAktivitas(2)" style="font-size:15px;padding:10px 24px">🔀 Urutkan PIPO</button>
+    </div>
+
+    <!-- AKTIVITAS 1: TANDAI PIPO -->
+    <div id="akt1" class="tandai-section active">
+      <div class="card" style="margin-bottom:10px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2)">
+        <div style="font-family:'Fredoka One',cursify;font-size:15px;color:var(--red);margin-bottom:4px">📌 Petunjuk:</div>
+        <p style="font-size:13px;font-weight:700;line-height:1.7">Baca paragraf lalu <strong>klik kalimat yang menjadi IDE POKOK!</strong> Kalimat yang benar akan berwarna hijau ✅, yang salah akan berwarna merah ❌.</p>
+      </div>
+      <div class="level-tabs">
+        <div class="level-tab active" onclick="switchLevel('deduktif')">🔝 Deduktif</div>
+        <div class="level-tab" onclick="switchLevel('induktif')">🔚 Induktif</div>
+        <div class="level-tab" onclick="switchLevel('campuran')">🔄 Campuran</div>
+      </div>
+
+      <!-- DEDUKTIF -->
+      <div id="level-deduktif" class="tandai-section active">
+        <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Paragraf Deduktif – klik kalimat ide pokoknya!</div>
+        <ul class="kalimat-list" id="kalimat-deduktif">
+          <li class="kalimat-item" data-correct="true" onclick="cekKalimat(this,'deduktif')">
+            Buah jeruk sangat bermanfaat bagi kesehatan tubuh kita.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'deduktif')">
+            Jeruk mengandung vitamin C yang tinggi sehingga dapat meningkatkan daya tahan tubuh.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'deduktif')">
+            Selain itu, jeruk juga mengandung antioksidan yang baik untuk kulit.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'deduktif')">
+            Mengonsumsi jeruk secara rutin dapat mencegah berbagai penyakit.
+          </li>
+        </ul>
+        <div id="reset-deduktif" style="display:none;text-align:center;margin-top:10px">
+          <button class="btn btn-orange" onclick="resetLevel('deduktif')" style="font-size:14px;padding:10px 24px">🔄 Coba Lagi</button>
+        </div>
+      </div>
+
+      <!-- INDUKTIF -->
+      <div id="level-induktif" class="tandai-section">
+        <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Paragraf Induktif – klik kalimat ide pokoknya!</div>
+        <ul class="kalimat-list" id="kalimat-induktif">
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'induktif')">
+            Santi selalu datang ke sekolah tepat waktu setiap hari.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'induktif')">
+            Ia rajin mengerjakan tugas dan tidak pernah mencontek.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'induktif')">
+            Santi juga sering membantu teman yang kesulitan memahami pelajaran.
+          </li>
+          <li class="kalimat-item" data-correct="true" onclick="cekKalimat(this,'induktif')">
+            Itulah mengapa Santi menjadi siswa yang disukai oleh semua guru dan teman-temannya.
+          </li>
+        </ul>
+        <div id="reset-induktif" style="display:none;text-align:center;margin-top:10px">
+          <button class="btn btn-orange" onclick="resetLevel('induktif')" style="font-size:14px;padding:10px 24px">🔄 Coba Lagi</button>
+        </div>
+      </div>
+
+      <!-- CAMPURAN -->
+      <div id="level-campuran" class="tandai-section">
+        <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Paragraf Campuran – klik DUA kalimat ide pokoknya!</div>
+        <ul class="kalimat-list" id="kalimat-campuran">
+          <li class="kalimat-item" data-correct="true" onclick="cekKalimat(this,'campuran')">
+            Olahraga teratur sangat penting untuk menjaga kesehatan tubuh.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'campuran')">
+            Dengan berolahraga, jantung kita menjadi lebih kuat dan sehat.
+          </li>
+          <li class="kalimat-item" data-correct="false" onclick="cekKalimat(this,'campuran')">
+            Olahraga juga membantu tubuh mengeluarkan racun melalui keringat.
+          </li>
+          <li class="kalimat-item" data-correct="true" onclick="cekKalimat(this,'campuran')">
+            Maka dari itu, kita harus membiasakan diri berolahraga secara teratur untuk hidup sehat.
+          </li>
+        </ul>
+        <div id="reset-campuran" style="display:none;text-align:center;margin-top:10px">
+          <button class="btn btn-orange" onclick="resetLevel('campuran')" style="font-size:14px;padding:10px 24px">🔄 Coba Lagi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AKTIVITAS 2: URUTKAN PIPO -->
+    <div id="akt2" class="tandai-section">
+      <div class="card" style="margin-bottom:10px;background:linear-gradient(135deg,#E3F2FD,#BBDEFB)">
+        <div style="font-family:'Fredoka One',cursify;font-size:15px;color:var(--blue);margin-bottom:4px">📌 Petunjuk:</div>
+        <p style="font-size:13px;font-weight:700;line-height:1.7"><strong>Seret (drag) kalimat-kalimat</strong> di bawah ini dan susun menjadi paragraf yang padu! Lalu klik ✔ Cek Jawaban.</p>
+      </div>
+      <div class="level-tabs">
+        <div class="level-tab active" onclick="switchUrut('mudah')">😊 Mudah</div>
+        <div class="level-tab" onclick="switchUrut('sedang')">😐 Sedang</div>
+        <div class="level-tab" onclick="switchUrut('sulit')">😤 Sulit</div>
+      </div>
+
+      <div id="urut-mudah" class="tandai-section active">
+        <div id="drag-mudah" class="urut-container">
+          <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Susun kalimat menjadi paragraf yang benar!</div>
+          <div class="urut-kalimat" draggable="true" data-order="2"><span class="drag-handle">⠿</span><span class="kalimat-num" id="num-m1">?</span> Pohon-pohon itu ditanam di sekitar sekolah dan jalan raya.</div>
+          <div class="urut-kalimat" draggable="true" data-order="1"><span class="drag-handle">⠿</span><span class="kalimat-num" id="num-m2">?</span> Penghijauan adalah kegiatan menanam pohon di lahan yang gundul.</div>
+          <div class="urut-kalimat" draggable="true" data-order="3"><span class="drag-handle">⠿</span><span class="kalimat-num" id="num-m3">?</span> Kegiatan ini bertujuan untuk mengurangi polusi udara.</div>
+          <div class="urut-kalimat" draggable="true" data-order="4"><span class="drag-handle">⠿</span><span class="kalimat-num" id="num-m4">?</span> Dengan penghijauan, lingkungan menjadi lebih asri dan sehat.</div>
+        </div>
+        <div class="check-btn-wrap">
+          <button class="btn btn-green" onclick="cekUrutan('mudah',[2,1,3,4])" style="font-size:15px;padding:10px 28px">✔️ Cek Jawaban</button>
+          <button class="btn btn-white" onclick="resetUrutan('mudah')" style="font-size:14px;padding:10px 20px;margin-left:8px">🔄 Reset</button>
+        </div>
+        <div id="result-mudah" class="urut-result">
+          <div class="result-emoji" id="emoji-mudah"></div>
+          <div class="result-text" id="text-mudah"></div>
+          <div id="sub-mudah" style="font-size:13px;color:#666;margin-top:4px"></div>
+        </div>
+      </div>
+
+      <div id="urut-sedang" class="tandai-section">
+        <div id="drag-sedang" class="urut-container">
+          <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Susun kalimat menjadi paragraf yang benar!</div>
+          <div class="urut-kalimat" draggable="true" data-order="3"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Selain itu, membaca juga melatih imajinasi dan kreativitas kita.</div>
+          <div class="urut-kalimat" draggable="true" data-order="1"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Membaca buku adalah kegiatan yang sangat bermanfaat.</div>
+          <div class="urut-kalimat" draggable="true" data-order="4"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Oleh karena itu, biasakan membaca buku setiap hari agar pintar.</div>
+          <div class="urut-kalimat" draggable="true" data-order="2"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Dengan membaca, kita dapat menambah pengetahuan dan wawasan.</div>
+        </div>
+        <div class="check-btn-wrap">
+          <button class="btn btn-green" onclick="cekUrutan('sedang',[3,1,4,2])" style="font-size:15px;padding:10px 28px">✔️ Cek Jawaban</button>
+          <button class="btn btn-white" onclick="resetUrutan('sedang')" style="font-size:14px;padding:10px 20px;margin-left:8px">🔄 Reset</button>
+        </div>
+        <div id="result-sedang" class="urut-result">
+          <div class="result-emoji" id="emoji-sedang"></div>
+          <div class="result-text" id="text-sedang"></div>
+          <div id="sub-sedang" style="font-size:13px;color:#666;margin-top:4px"></div>
+        </div>
+      </div>
+
+      <div id="urut-sulit" class="tandai-section">
+        <div id="drag-sulit" class="urut-container">
+          <div style="font-size:13px;font-weight:700;color:#666;text-align:center;margin-bottom:8px">Susun kalimat menjadi paragraf yang benar!</div>
+          <div class="urut-kalimat" draggable="true" data-order="4"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Bahkan, ada yang mengalami gangguan tidur akibat terlalu lama menatap layar.</div>
+          <div class="urut-kalimat" draggable="true" data-order="2"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Banyak anak menghabiskan waktu berjam-jam untuk bermain game.</div>
+          <div class="urut-kalimat" draggable="true" data-order="1"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Penggunaan gawai yang berlebihan dapat membahayakan kesehatan anak.</div>
+          <div class="urut-kalimat" draggable="true" data-order="3"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Hal ini menyebabkan mata lelah dan punggung terasa sakit.</div>
+          <div class="urut-kalimat" draggable="true" data-order="5"><span class="drag-handle">⠿</span><span class="kalimat-num">?</span> Oleh karena itu, orang tua perlu mengawasi penggunaan gawai pada anak.</div>
+        </div>
+        <div class="check-btn-wrap">
+          <button class="btn btn-green" onclick="cekUrutan('sulit',[4,2,1,3,5])" style="font-size:15px;padding:10px 28px">✔️ Cek Jawaban</button>
+          <button class="btn btn-white" onclick="resetUrutan('sulit')" style="font-size:14px;padding:10px 20px;margin-left:8px">🔄 Reset</button>
+        </div>
+        <div id="result-sulit" class="urut-result">
+          <div class="result-emoji" id="emoji-sulit"></div>
+          <div class="result-text" id="text-sulit"></div>
+          <div id="sub-sulit" style="font-size:13px;color:#666;margin-top:4px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     8. LATIHAN SOAL
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-soal">
+  <div style="background:linear-gradient(135deg,#9B59B6,#8E44AD);padding:55px 24px 16px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right"><button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button></div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">✏️ Latihan Soal</h2>
+    <p style="color:rgba(255,255,255,.85);font-size:13px;text-align:center">5 soal – Pilihan Ganda & Benar/Salah</p>
+  </div>
+  <div class="content-scroll" style="padding-top:16px" id="soal-content">
+    <!-- SOAL 1 -->
+    <div id="soal-1" class="soal-card">
+      <span class="soal-badge badge-pg">📝 Pilihan Ganda – Soal 1/5</span>
+      <div class="soal-progress">
+        <div class="soal-num">1/5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:20%"></div></div>
+      </div>
+      <div class="soal-para">
+        Hewan-hewan di hutan hidup dengan bebas dan harmonis. Setiap hewan memiliki perannya masing-masing dalam ekosistem. Harimau sebagai predator puncak menjaga keseimbangan populasi. Rusa dan kelinci memakan tumbuhan sebagai herbivora. <strong>Inilah yang membuat hutan menjadi ekosistem yang seimbang dan lestari.</strong>
+      </div>
+      <div class="soal-text">Jenis paragraf di atas adalah...</div>
+      <ul class="pilihan-list">
+        <li class="pilihan-item" onclick="jawabPG(this,1,'A','C')"><span class="pilihan-letter">A</span> Deduktif</li>
+        <li class="pilihan-item" onclick="jawabPG(this,1,'B','C')"><span class="pilihan-letter">B</span> Naratif</li>
+        <li class="pilihan-item" onclick="jawabPG(this,1,'C','C')"><span class="pilihan-letter">C</span> Induktif</li>
+        <li class="pilihan-item" onclick="jawabPG(this,1,'D','C')"><span class="pilihan-letter">D</span> Campuran</li>
+      </ul>
+      <div class="soal-feedback" id="feedback-1"></div>
+      <div class="soal-nav-btn"><button class="btn btn-orange" onclick="lanjutSoal(2)" style="font-size:14px;padding:10px 24px">Soal Berikutnya ➡️</button></div>
+    </div>
+
+    <!-- SOAL 2 -->
+    <div id="soal-2" class="soal-card" style="display:none">
+      <span class="soal-badge badge-pg">📝 Pilihan Ganda – Soal 2/5</span>
+      <div class="soal-progress">
+        <div class="soal-num">2/5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+      </div>
+      <div class="soal-para">
+        <strong>Sampah plastik menjadi masalah lingkungan yang serius di seluruh dunia.</strong> Plastik tidak dapat terurai secara alami dalam waktu singkat. Sampah plastik yang dibuang ke laut merusak ekosistem laut. Hewan-hewan laut seperti penyu dan lumba-lumba sering mati karena menelan plastik.
+      </div>
+      <div class="soal-text">Di mana letak kalimat utama paragraf tersebut?</div>
+      <ul class="pilihan-list">
+        <li class="pilihan-item" onclick="jawabPG(this,2,'A','A')"><span class="pilihan-letter">A</span> Kalimat pertama</li>
+        <li class="pilihan-item" onclick="jawabPG(this,2,'B','A')"><span class="pilihan-letter">B</span> Kalimat kedua</li>
+        <li class="pilihan-item" onclick="jawabPG(this,2,'C','A')"><span class="pilihan-letter">C</span> Kalimat ketiga</li>
+        <li class="pilihan-item" onclick="jawabPG(this,2,'D','A')"><span class="pilihan-letter">D</span> Kalimat terakhir</li>
+      </ul>
+      <div class="soal-feedback" id="feedback-2"></div>
+      <div class="soal-nav-btn"><button class="btn btn-orange" onclick="lanjutSoal(3)" style="font-size:14px;padding:10px 24px">Soal Berikutnya ➡️</button></div>
+    </div>
+
+    <!-- SOAL 3 -->
+    <div id="soal-3" class="soal-card" style="display:none">
+      <span class="soal-badge badge-pg">📝 Pilihan Ganda – Soal 3/5</span>
+      <div class="soal-progress">
+        <div class="soal-num">3/5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+      </div>
+      <div class="soal-text">Kalimat penjelas berfungsi untuk...</div>
+      <ul class="pilihan-list">
+        <li class="pilihan-item" onclick="jawabPG(this,3,'A','B')"><span class="pilihan-letter">A</span> Memuat gagasan utama paragraf</li>
+        <li class="pilihan-item" onclick="jawabPG(this,3,'B','B')"><span class="pilihan-letter">B</span> Mendukung dan menjelaskan kalimat utama</li>
+        <li class="pilihan-item" onclick="jawabPG(this,3,'C','B')"><span class="pilihan-letter">C</span> Membuat kesimpulan paragraf</li>
+        <li class="pilihan-item" onclick="jawabPG(this,3,'D','B')"><span class="pilihan-letter">D</span> Mengawali setiap paragraf baru</li>
+      </ul>
+      <div class="soal-feedback" id="feedback-3"></div>
+      <div class="soal-nav-btn"><button class="btn btn-orange" onclick="lanjutSoal(4)" style="font-size:14px;padding:10px 24px">Soal Berikutnya ➡️</button></div>
+    </div>
+
+    <!-- SOAL 4 (Benar/Salah) -->
+    <div id="soal-4" class="soal-card" style="display:none">
+      <span class="soal-badge badge-bs">✅ Benar/Salah – Soal 4/5</span>
+      <div class="soal-progress">
+        <div class="soal-num">4/5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="soal-text">Paragraf deduktif adalah paragraf yang kalimat utamanya berada di <strong>akhir</strong> paragraf.</div>
+      <div class="bs-wrap">
+        <button class="bs-btn" onclick="jawabBS(this,4,'B','S')">✅ BENAR</button>
+        <button class="bs-btn" onclick="jawabBS(this,4,'S','S')">❌ SALAH</button>
+      </div>
+      <div class="soal-feedback" id="feedback-4"></div>
+      <div class="soal-nav-btn"><button class="btn btn-orange" onclick="lanjutSoal(5)" style="font-size:14px;padding:10px 24px">Soal Berikutnya ➡️</button></div>
+    </div>
+
+    <!-- SOAL 5 (Benar/Salah) -->
+    <div id="soal-5" class="soal-card" style="display:none">
+      <span class="soal-badge badge-bs">✅ Benar/Salah – Soal 5/5</span>
+      <div class="soal-progress">
+        <div class="soal-num">5/5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+      </div>
+      <div class="soal-text">Kalimat penjelas bersifat umum dan dapat berdiri sendiri tanpa kalimat utama.</div>
+      <div class="bs-wrap">
+        <button class="bs-btn" onclick="jawabBS(this,5,'B','S')">✅ BENAR</button>
+        <button class="bs-btn" onclick="jawabBS(this,5,'S','S')">❌ SALAH</button>
+      </div>
+      <div class="soal-feedback" id="feedback-5"></div>
+      <div class="soal-nav-btn"><button class="btn btn-green" onclick="tampilSkor()" style="font-size:14px;padding:10px 24px">🏆 Lihat Skor</button></div>
+    </div>
+
+    <!-- SKOR -->
+    <div id="skor-display" style="display:none">
+      <div class="skor-display">
+        <div id="skor-mascot" style="margin-bottom:8px"></div>
+        <div class="skor-circle">
+          <div class="skor-angka" id="skor-nilai">0</div>
+          <div class="skor-dari">dari 100</div>
+        </div>
+        <div class="skor-title" id="skor-pesan">Selamat! 🎉</div>
+        <div style="font-size:14px;color:#666;font-weight:700" id="skor-sub"></div>
+        <div class="skor-kunci">
+          <div style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--red);margin-bottom:10px">🔑 Kunci Jawaban</div>
+          <div class="kunci-item"><div class="kunci-num">1</div> C – Induktif (ide pokok di kalimat terakhir)</div>
+          <div class="kunci-item"><div class="kunci-num">2</div> A – Kalimat pertama</div>
+          <div class="kunci-item"><div class="kunci-num">3</div> B – Mendukung dan menjelaskan kalimat utama</div>
+          <div class="kunci-item"><div class="kunci-num">4</div> SALAH – Deduktif = ide pokok di awal</div>
+          <div class="kunci-item"><div class="kunci-num">5</div> SALAH – Kalimat penjelas bersifat khusus</div>
+        </div>
+        <button class="btn btn-orange" onclick="ulangSoal()" style="margin-top:16px;font-size:15px">🔄 Ulangi Soal</button>
+        <button class="btn btn-red" onclick="goTo('menu')" style="margin-top:8px;font-size:15px">🏠 Menu Utama</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     9. PENUTUP
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-penutup">
+  <div style="background:linear-gradient(135deg,#E91E8C,#C2185B);padding:55px 24px 20px">
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goTo('menu')">🏠</button>
+      <div class="nav-right"><button class="nav-btn sound-btn" onclick="toggleSound()">🔊</button></div>
+    </div>
+    <h2 style="font-family:'Fredoka One',cursive;font-size:26px;color:#fff;text-align:center">🌟 Penutup</h2>
+  </div>
+  <div class="content-scroll" style="padding-top:16px">
+    <!-- RANGKUMAN -->
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--red);margin-bottom:10px">📋 Rangkuman</div>
+    <div class="card card-orange" style="margin-bottom:10px">
+      <p style="font-size:14px;line-height:1.8;font-weight:700">
+        🌟 <strong>Ide pokok</strong> adalah gagasan utama atau inti paragraf.<br>
+        🔑 <strong>Kalimat utama</strong> adalah kalimat yang memuat ide pokok.<br>
+        📎 <strong>Kalimat penjelas</strong> mendukung dan menguraikan kalimat utama.<br>
+        🔝 <strong>Deduktif</strong> = ide pokok di awal · <strong>Induktif</strong> = ide pokok di akhir · <strong>Campuran</strong> = awal & akhir.
+      </p>
+    </div>
+
+    <!-- REFLEKSI -->
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--purple);margin-bottom:10px;margin-top:6px">🤔 Refleksi Diri</div>
+    <div class="refleksi-item">
+      <div class="refleksi-num">1</div>
+      <div style="font-size:14px;font-weight:700;line-height:1.7">Sudahkah kamu memahami perbedaan antara kalimat utama dan kalimat penjelas? Berikan contoh kalimat utama dari paragraf yang kamu buat sendiri!</div>
+    </div>
+    <div class="refleksi-item">
+      <div class="refleksi-num">2</div>
+      <div style="font-size:14px;font-weight:700;line-height:1.7">Menurutmu, mengapa ide pokok penting dalam sebuah paragraf? Apa yang terjadi jika sebuah paragraf tidak memiliki ide pokok yang jelas?</div>
+    </div>
+    <div class="refleksi-item">
+      <div class="refleksi-num">3</div>
+      <div style="font-size:14px;font-weight:700;line-height:1.7">Bagian mana dari pembelajaran hari ini yang paling menarik dan paling sulit bagimu? Mengapa?</div>
+    </div>
+
+    <!-- SIMPULAN -->
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--green);margin-bottom:10px;margin-top:6px">💎 Simpulan</div>
+    <div class="card" style="border-left:5px solid var(--green)">
+      <p style="font-size:14px;line-height:1.8;font-weight:600">
+        Menemukan ide pokok adalah kunci memahami isi sebuah teks. Dengan menguasai cara menentukan ide pokok, kamu akan lebih mudah memahami bacaan, membuat ringkasan, dan menulis paragraf yang baik. Teruslah berlatih dan jangan menyerah!
+      </p>
+    </div>
+
+    <!-- MOTIVASI -->
+    <div class="motivasi-card">
+      <div style="display:flex;justify-content:center;margin-bottom:6px">
+        <svg width="115" height="138" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow -->
+  <ellipse cx="100" cy="254" rx="48" ry="7" fill="rgba(0,0,0,0.12)"/>
+
+  <!-- ═══ BODY / HOODIE MERAH ═══ -->
+  <!-- Torso utama -->
+  <path d="M52 160 Q48 185 46 220 Q60 235 100 238 Q140 235 154 220 Q152 185 148 160 Q130 150 100 148 Q70 150 52 160Z" fill="#D92B20"/>
+  <!-- Hoodie tengah gelap -->
+  <path d="M88 160 Q88 185 90 238 Q95 239 100 238 Q105 239 110 238 Q112 185 112 160 Q104 156 100 155 Q96 156 88 160Z" fill="#B82218"/>
+  <!-- Tulisan PIPO -->
+  <text x="100" y="200" text-anchor="middle" font-family="Fredoka One,sans-serif" font-size="18" fill="#FFD700" font-weight="bold" letter-spacing="2">PIPO</text>
+  <!-- Kancing/zipper detail -->
+  <circle cx="100" cy="165" r="3" fill="#B82218"/>
+  <circle cx="100" cy="175" r="3" fill="#B82218"/>
+
+  <!-- ═══ LENGAN KIRI (pegang buku) ═══ -->
+  <path d="M52 160 Q30 165 22 185 Q20 200 28 208 Q36 195 48 188 Q50 175 52 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kiri -->
+  <ellipse cx="24" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M14 206 Q12 215 15 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M24 208 Q24 218 24 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M34 206 Q36 215 33 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- BUKU BIRU di tangan kiri -->
+  <g transform="rotate(8 30 215)">
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="#2471A3"/>
+    <rect x="4" y="200" width="8" height="30" rx="3" fill="#1A5276"/>
+    <rect x="4" y="200" width="40" height="30" rx="4" fill="none" stroke="#1A5276" stroke-width="1.5"/>
+    <line x1="16" y1="208" x2="41" y2="208" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="215" x2="41" y2="215" stroke="#7FB3D3" stroke-width="2"/>
+    <line x1="16" y1="222" x2="41" y2="222" stroke="#7FB3D3" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ LENGAN KANAN ═══ -->
+  <path d="M148 160 Q170 165 178 185 Q180 200 172 208 Q164 195 152 188 Q150 175 148 160Z" fill="#D92B20"/>
+  <!-- Tangan/paw kanan -->
+  <ellipse cx="176" cy="210" rx="14" ry="11" fill="#E8922A"/>
+  <path d="M166 206 Q164 215 167 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M176 208 Q176 218 176 223" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M186 206 Q188 215 185 220" stroke="#C46A1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ LEHER ═══ -->
+  <path d="M82 148 Q82 138 100 136 Q118 138 118 148 Q112 155 100 155 Q88 155 82 148Z" fill="#D4853A"/>
+  <!-- Loreng leher -->
+  <path d="M88 140 Q90 136 92 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+  <path d="M108 140 Q110 136 112 140" stroke="#C46A1A" stroke-width="2" fill="none"/>
+
+  <!-- ═══ KEPALA HARIMAU ═══ -->
+  <!-- Tengkorak kepala - bentuk harimau -->
+  <ellipse cx="100" cy="95" rx="62" ry="58" fill="#E8922A"/>
+
+  <!-- TELINGA KIRI - lancip seperti harimau sungguhan -->
+  <polygon points="44,58 28,12 66,45" fill="#E8922A"/>
+  <polygon points="47,55 36,20 63,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kiri -->
+  <polygon points="50,52 42,28 60,44" fill="#F5C8A0"/>
+
+  <!-- TELINGA KANAN - lancip -->
+  <polygon points="156,58 172,12 134,45" fill="#E8922A"/>
+  <polygon points="153,55 164,20 137,44" fill="#C46A1A"/>
+  <!-- Bulu dalam telinga kanan -->
+  <polygon points="150,52 158,28 140,44" fill="#F5C8A0"/>
+
+  <!-- LORENG DAHI & KEPALA -->
+  <path d="M72 48 Q76 38 74 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M82 42 Q85 32 83 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 48 Q124 38 126 30" stroke="#C46A1A" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 42 Q115 32 117 24" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Loreng pipi -->
+  <path d="M40 82 Q50 86 46 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M36 96 Q46 98 44 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M160 82 Q150 86 154 96" stroke="#C46A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M164 96 Q154 98 156 108" stroke="#C46A1A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- AREA MONCONG putih gading -->
+  <ellipse cx="100" cy="115" rx="36" ry="28" fill="#FFF0D0"/>
+  <!-- Loreng di moncong -->
+  <path d="M72 104 Q76 108 72 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M128 104 Q124 108 128 112" stroke="#C46A1A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- ═══ KACAMATA ═══ -->
+  <!-- Lensa kiri - background putih -->
+  <circle cx="80" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Lensa kanan - background putih -->
+  <circle cx="120" cy="98" r="19" fill="white" opacity="0.95"/>
+  <!-- Frame kacamata kiri (tebal, coklat tua) -->
+  <circle cx="80" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Frame kacamata kanan -->
+  <circle cx="120" cy="98" r="19" fill="none" stroke="#3D2008" stroke-width="4"/>
+  <!-- Bridge kacamata (penyambung) -->
+  <path d="M99 97 Q100 93 101 97" stroke="#3D2008" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kiri -->
+  <path d="M61 90 Q50 87 42 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Gagang kanan -->
+  <path d="M139 90 Q150 87 158 88" stroke="#3D2008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- MATA (bola mata coklat gelap) -->
+  <circle cx="80" cy="99" r="12" fill="#2C1A0E"/>
+  <circle cx="120" cy="99" r="12" fill="#2C1A0E"/>
+  <!-- Refleksi mata -->
+  <circle cx="84" cy="95" r="4.5" fill="white"/>
+  <circle cx="124" cy="95" r="4.5" fill="white"/>
+  <circle cx="86" cy="93" r="2" fill="white"/>
+  <circle cx="126" cy="93" r="2" fill="white"/>
+
+  <!-- HIDUNG harimau -->
+  <path d="M92 120 Q100 115 108 120 Q104 128 100 130 Q96 128 92 120Z" fill="#D04010"/>
+  <ellipse cx="100" cy="118" rx="10" ry="6" fill="#D04010"/>
+  <!-- Garis hidung ke mulut -->
+  <line x1="100" y1="124" x2="100" y2="130" stroke="#8B3A0A" stroke-width="2"/>
+
+  <!-- MULUT senyum harimau -->
+  <path d="M82 132 Q100 145 118 132" stroke="#8B3A0A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M82 132 Q79 136 82 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M118 132 Q121 136 118 140" stroke="#8B3A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- KUMIS kiri -->
+  <line x1="44" y1="120" x2="76" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="42" y1="128" x2="76" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="46" y1="136" x2="76" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+  <!-- KUMIS kanan -->
+  <line x1="156" y1="120" x2="124" y2="122" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="158" y1="128" x2="124" y2="127" stroke="#8B3A0A" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="154" y1="136" x2="124" y2="132" stroke="#8B3A0A" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- ═══ TOPI WISUDA ═══ -->
+  <!-- Brim/pinggiran lebar hitam -->
+  <ellipse cx="100" cy="46" rx="72" ry="16" fill="#1A2744"/>
+  <!-- Highlight brim -->
+  <ellipse cx="100" cy="43" rx="70" ry="9" fill="#233058"/>
+  <!-- Kotak atas topi (mortarboard) -->
+  <rect x="42" y="10" width="116" height="42" rx="5" fill="#1A2744"/>
+  <!-- Highlight atas topi -->
+  <rect x="44" y="12" width="112" height="10" rx="4" fill="#233058" opacity="0.5"/>
+  <!-- Tepi topi -->
+  <rect x="40" y="8" width="120" height="10" rx="5" fill="#1A2744"/>
+  <!-- Tali tassel kuning -->
+  <line x1="158" y1="10" x2="168" y2="46" stroke="#FFD700" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Pompom kuning -->
+  <circle cx="170" cy="49" r="10" fill="#FFD700"/>
+  <line x1="170" y1="59" x2="166" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="170" y2="78" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="170" y1="59" x2="174" y2="76" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+      </div>
+      <div class="m-text">"Kamu Luar Biasa! 🌟</div>
+      <div style="color:rgba(255,255,255,.95);font-size:14px;font-weight:700;margin-top:6px">Setiap buku yang kamu baca membuka jendela dunia baru. Terus semangat belajar, jangan pernah menyerah, dan jadilah yang terbaik dari dirimu sendiri!"</div>
+      <div style="color:rgba(255,255,255,.8);font-size:12px;margin-top:8px">– PIPO 🐯</div>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-red" onclick="goTo('menu')" style="font-size:15px">🏠 Kembali ke Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK POPUP -->
+<div class="feedback-popup" id="feedbackPopup">
+  <div class="fb-icon" id="fbIcon"></div>
+  <div class="fb-title" id="fbTitle"></div>
+  <div class="fb-sub" id="fbSub"></div>
+  <button class="fb-close" onclick="closeFeedback()">OK, Mengerti!</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   SOUND ENGINE (Web Audio API)
+═══════════════════════════════════════ */
+let soundOn = true;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, dur, type='sine', vol=0.3) {
+  if (!soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+
+function soundClick()  { playTone(800,0.08,'sine',0.2); }
+function soundPage()   { playTone(600,0.12,'sine',0.2); setTimeout(()=>playTone(800,0.12,'sine',0.2),100); }
+function soundBenar()  { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'sine',0.3),i*80)); }
+function soundSalah()  { playTone(300,0.15,'sawtooth',0.2); setTimeout(()=>playTone(200,0.3,'sawtooth',0.2),120); }
+
+function toggleSound() {
+  soundOn = !soundOn;
+  document.querySelectorAll('.sound-btn').forEach(b => b.textContent = soundOn ? '🔊' : '🔇');
+  if (soundOn) soundClick();
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+function goTo(id) {
+  soundPage();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  // scroll top
+  const sc = document.querySelector('#screen-' + id + ' .content-scroll');
+  if (sc) sc.scrollTop = 0;
+}
+
+/* ═══════════════════════════════════════
+   MATERI TABS
+═══════════════════════════════════════ */
+function switchMateri(id) {
+  soundClick();
+  document.querySelectorAll('.materi-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.materi-page').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('materi-' + id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════
+   AKTIVITAS SWITCH
+═══════════════════════════════════════ */
+function switchAktivitas(n) {
+  soundClick();
+  document.getElementById('akt1').classList.toggle('active', n===1);
+  document.getElementById('akt2').classList.toggle('active', n===2);
+  document.getElementById('btn-akt1').style.opacity = n===1 ? '1' : '0.6';
+  document.getElementById('btn-akt2').style.opacity = n===2 ? '1' : '0.6';
+}
+
+/* ═══════════════════════════════════════
+   AKTIVITAS 1: TANDAI PIPO
+═══════════════════════════════════════ */
+function switchLevel(id) {
+  soundClick();
+  document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('#akt1 .tandai-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('level-' + id).classList.add('active');
+}
+
+let campuranBenar = 0;
+
+function cekKalimat(el, level) {
+  if (el.classList.contains('benar') || el.classList.contains('salah')) return;
+  const isCorrect = el.getAttribute('data-correct') === 'true';
+  soundClick();
+
+  if (isCorrect) {
+    soundBenar();
+    el.classList.add('benar');
+    el.innerHTML += '<span class="feedback-icon">✅</span>';
+    if (level !== 'campuran') {
+      showFeedback(true);
+      setTimeout(() => { document.getElementById('reset-' + level).style.display = 'block'; }, 600);
+    } else {
+      campuranBenar++;
+      if (campuranBenar >= 2) { showFeedback(true); setTimeout(() => { document.getElementById('reset-campuran').style.display='block'; campuranBenar=0; }, 600); }
+    }
+  } else {
+    soundSalah();
+    el.classList.add('salah');
+    el.innerHTML += '<span class="feedback-icon">❌</span>';
+    showFeedback(false);
+  }
+}
+
+function resetLevel(level) {
+  soundClick();
+  const list = document.getElementById('kalimat-' + level);
+  list.querySelectorAll('.kalimat-item').forEach(li => {
+    li.classList.remove('benar','salah');
+    li.querySelector('.feedback-icon')?.remove();
+  });
+  document.getElementById('reset-' + level).style.display = 'none';
+  if (level === 'campuran') campuranBenar = 0;
+}
+
+/* ═══════════════════════════════════════
+   AKTIVITAS 2: URUTKAN PIPO (Drag & Drop)
+═══════════════════════════════════════ */
+function switchUrut(level) {
+  soundClick();
+  document.querySelectorAll('#akt2 .level-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  ['mudah','sedang','sulit'].forEach(l => {
+    const el = document.getElementById('urut-' + l);
+    if (el) el.classList.toggle('active', l === level);
+  });
+}
+
+// Setup drag & drop
+function setupDrag(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let dragged = null;
+  container.querySelectorAll('.urut-kalimat').forEach(item => {
+    item.addEventListener('dragstart', e => { dragged = item; item.classList.add('dragging'); soundClick(); });
+    item.addEventListener('dragend', () => { dragged = null; item.classList.remove('dragging'); });
+    item.addEventListener('dragover', e => { e.preventDefault(); });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragged && dragged !== item) {
+        const items = [...container.querySelectorAll('.urut-kalimat')];
+        const dragIdx = items.indexOf(dragged);
+        const dropIdx = items.indexOf(item);
+        if (dragIdx < dropIdx) item.after(dragged);
+        else item.before(dragged);
+        soundClick();
+      }
+    });
+  });
+}
+
+function cekUrutan(level, correctOrder) {
+  soundClick();
+  const container = document.getElementById('drag-' + level);
+  const items = [...container.querySelectorAll('.urut-kalimat')];
+  const currentOrder = items.map(i => parseInt(i.getAttribute('data-order')));
+  const correct = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+  const result = document.getElementById('result-' + level);
+  result.classList.add('show');
+  if (correct) {
+    soundBenar();
+    document.getElementById('emoji-' + level).textContent = '🎉';
+    document.getElementById('text-' + level).textContent = 'Urutan Benar!';
+    document.getElementById('sub-' + level).textContent = 'Kamu berhasil menyusun paragraf dengan tepat!';
+    document.getElementById('text-' + level).style.color = 'var(--green)';
+  } else {
+    soundSalah();
+    document.getElementById('emoji-' + level).textContent = '😅';
+    document.getElementById('text-' + level).textContent = 'Belum Tepat, Coba Lagi!';
+    document.getElementById('sub-' + level).textContent = 'Susun ulang kalimat dengan urutan yang benar ya!';
+    document.getElementById('text-' + level).style.color = 'var(--red)';
+  }
+}
+
+function resetUrutan(level) {
+  soundClick();
+  document.getElementById('result-' + level).classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   FEEDBACK POPUP
+═══════════════════════════════════════ */
+function showFeedback(benar) {
+  const popup = document.getElementById('feedbackPopup');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('fbIcon').textContent = benar ? '🎉' : '😅';
+  document.getElementById('fbTitle').textContent = benar ? 'Benar! Hebat!' : 'Coba Lagi!';
+  document.getElementById('fbSub').textContent = benar
+    ? 'Kamu berhasil menemukan ide pokok! Luar biasa 🐯'
+    : 'Bukan itu ide pokoknya. Yuk coba lagi, kamu pasti bisa!';
+  popup.classList.add('show');
+  overlay.classList.add('show');
+}
+
+function closeFeedback() {
+  soundClick();
+  document.getElementById('feedbackPopup').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   LATIHAN SOAL
+═══════════════════════════════════════ */
+let skorCount = 0;
+let jawabanSoal = {};
+
+function jawabPG(el, soalNum, pilihan, correct) {
+  if (jawabanSoal[soalNum]) return;
+  soundClick();
+  jawabanSoal[soalNum] = pilihan;
+  const allPilihan = el.closest('ul').querySelectorAll('.pilihan-item');
+  allPilihan.forEach(p => p.style.pointerEvents = 'none');
+
+  const feedback = document.getElementById('feedback-' + soalNum);
+  if (pilihan === correct) {
+    soundBenar();
+    el.classList.add('correct');
+    skorCount++;
+    feedback.textContent = '✅ Benar! Jawaban yang tepat!';
+    feedback.className = 'soal-feedback benar show';
+  } else {
+    soundSalah();
+    el.classList.add('wrong');
+    allPilihan.forEach(p => {
+      if (p.querySelector('.pilihan-letter').textContent === correct) p.classList.add('correct');
+    });
+    feedback.textContent = '❌ Belum tepat. Jawaban yang benar adalah ' + correct;
+    feedback.className = 'soal-feedback salah show';
+  }
+}
+
+function jawabBS(el, soalNum, pilihan, correct) {
+  if (jawabanSoal[soalNum]) return;
+  soundClick();
+  jawabanSoal[soalNum] = pilihan;
+  const allBtn = el.closest('.bs-wrap').querySelectorAll('.bs-btn');
+  allBtn.forEach(b => b.style.pointerEvents = 'none');
+
+  const feedback = document.getElementById('feedback-' + soalNum);
+  if (pilihan === correct) {
+    soundBenar();
+    el.classList.add('correct');
+    skorCount++;
+    feedback.textContent = '✅ Benar! Jawaban yang tepat!';
+    feedback.className = 'soal-feedback benar show';
+  } else {
+    soundSalah();
+    el.classList.add('wrong');
+    allBtn.forEach(b => { if ((correct==='B'&&b.textContent.includes('BENAR'))||(correct==='S'&&b.textContent.includes('SALAH'))) b.classList.add('correct'); });
+    feedback.textContent = '❌ Belum tepat. Jawaban yang benar adalah ' + (correct==='B' ? 'BENAR' : 'SALAH');
+    feedback.className = 'soal-feedback salah show';
+  }
+}
+
+function lanjutSoal(next) {
+  soundPage();
+  document.getElementById('soal-' + (next-1)).style.display = 'none';
+  document.getElementById('soal-' + next).style.display = 'block';
+}
+
+function tampilSkor() {
+  soundPage();
+  document.querySelectorAll('.soal-card').forEach(c => c.style.display = 'none');
+  const skor = document.getElementById('skor-display');
+  skor.style.display = 'block';
+  const nilai = skorCount * 20;
+  document.getElementById('skor-nilai').textContent = nilai;
+  let pesan, sub;
+  if (nilai === 100) { pesan = '🏆 Sempurna! Luar Biasa!'; sub = 'Kamu menjawab semua soal dengan benar! Kamu adalah PIPO Champion!'; soundBenar(); }
+  else if (nilai >= 80) { pesan = '🌟 Hebat! Hampir Sempurna!'; sub = 'Nilai kamu sangat bagus. Terus tingkatkan ya!'; soundBenar(); }
+  else if (nilai >= 60) { pesan = '😊 Bagus! Terus Belajar!'; sub = 'Kamu sudah paham sebagian. Ulangi materi dan coba lagi!'; }
+  else { pesan = '💪 Semangat! Jangan Menyerah!'; sub = 'Pelajari lagi materinya ya, PIPO yakin kamu pasti bisa!'; soundSalah(); }
+  document.getElementById('skor-pesan').textContent = pesan;
+  document.getElementById('skor-sub').textContent = sub;
+}
+
+function ulangSoal() {
+  soundPage();
+  skorCount = 0; jawabanSoal = {};
+  document.getElementById('skor-display').style.display = 'none';
+  document.querySelectorAll('.soal-card').forEach(c => c.style.display = 'none');
+  document.getElementById('soal-1').style.display = 'block';
+  // reset all
+  document.querySelectorAll('.pilihan-item').forEach(p => { p.classList.remove('correct','wrong'); p.style.pointerEvents=''; });
+  document.querySelectorAll('.bs-btn').forEach(b => { b.classList.remove('correct','wrong'); b.style.pointerEvents=''; });
+  document.querySelectorAll('.soal-feedback').forEach(f => { f.className='soal-feedback'; });
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+window.addEventListener('load', () => {
+  setupDrag('drag-mudah');
+  setupDrag('drag-sedang');
+  setupDrag('drag-sulit');
+});
+</script>
+</body>
+</html>
