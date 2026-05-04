@@ -42,6 +42,13 @@ body {
   animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
 }
 .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
 @keyframes popIn {
   from { transform: scale(.85) translateY(30px); opacity:0; }
   to   { transform: scale(1) translateY(0); opacity:1; }
@@ -381,7 +388,8 @@ body {
   background:white; border-radius:14px; padding:12px 16px;
   margin-bottom:8px; border:2px solid #FFD0A0; cursor:grab;
   font-size:14px; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,.07);
-  display:flex; align-items:center; gap:10px; transition:.2s;
+  display:flex; align-items:center; gap:10px;
+  transition:background .3s, border-color .3s;
   user-select:none;
 }
 .urut-kalimat:hover { border-color:var(--orange); transform:scale(1.01); }
@@ -1843,12 +1851,21 @@ function setupDrag(containerId) {
     item.addEventListener('drop', e => {
       e.preventDefault();
       if (dragged && dragged !== item) {
+        // Jangan pindahkan jika target atau dragged sudah locked
+        if (item.dataset.locked === 'true' || dragged.dataset.locked === 'true') return;
         const items = [...container.querySelectorAll('.urut-kalimat')];
         const dragIdx = items.indexOf(dragged);
         const dropIdx = items.indexOf(item);
         if (dragIdx < dropIdx) item.after(dragged);
         else item.before(dragged);
         soundClick();
+        // Reset warna merah item yang dipindahkan (belum dicek ulang)
+        dragged.style.background = '';
+        dragged.style.borderColor = '';
+        dragged.querySelector('.urut-badge')?.remove();
+        const ns = dragged.querySelector('.kalimat-num');
+        ns.style.background = '';
+        ns.textContent = '?';
       }
     });
   });
@@ -1858,27 +1875,94 @@ function cekUrutan(level, correctOrder) {
   soundClick();
   const container = document.getElementById('drag-' + level);
   const items = [...container.querySelectorAll('.urut-kalimat')];
-  const currentOrder = items.map(i => parseInt(i.getAttribute('data-order')));
-  const correct = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+
+  let allCorrect = true;
+  let anyNewCorrect = false;
+
+  items.forEach((item, idx) => {
+    // Kalau sudah dikunci hijau sebelumnya, skip
+    if (item.dataset.locked === 'true') return;
+
+    const dataOrder = parseInt(item.getAttribute('data-order'));
+    const correctPos = correctOrder.indexOf(dataOrder) + 1;
+    const currentPos = idx + 1;
+    const isCorrect = currentPos === correctPos;
+
+    item.querySelector('.urut-badge')?.remove();
+    const numSpan = item.querySelector('.kalimat-num');
+    const badge = document.createElement('span');
+    badge.className = 'urut-badge';
+
+    if (isCorrect) {
+      // Kunci kalimat ini — sudah benar, tidak bisa dipindah lagi
+      anyNewCorrect = true;
+      item.dataset.locked = 'true';
+      item.setAttribute('draggable', 'false');
+      item.style.cursor = 'default';
+      item.style.background = '#EAFAF1';
+      item.style.borderColor = '#2ECC71';
+      numSpan.style.background = '#2ECC71';
+      numSpan.textContent = currentPos;
+      badge.style.cssText = 'margin-left:auto;font-size:22px;flex-shrink:0';
+      badge.textContent = '✅';
+    } else {
+      // Masih salah — tandai merah tapi tetap bisa didrag
+      allCorrect = false;
+      item.style.background = '#FDECEA';
+      item.style.borderColor = '#E8322A';
+      numSpan.style.background = '#E8322A';
+      numSpan.textContent = currentPos;
+      badge.style.cssText = 'margin-left:auto;font-size:20px;flex-shrink:0';
+      badge.textContent = '❌';
+    }
+    item.appendChild(badge);
+  });
+
+  // Cek ulang apakah semua sudah terkunci
+  const allLocked = [...items].every(i => i.dataset.locked === 'true');
+
   const result = document.getElementById('result-' + level);
   result.classList.add('show');
-  if (correct) {
+
+  if (allLocked) {
     soundBenar();
     document.getElementById('emoji-' + level).textContent = '🎉';
-    document.getElementById('text-' + level).textContent = 'Urutan Benar!';
-    document.getElementById('sub-' + level).textContent = 'Kamu berhasil menyusun paragraf dengan tepat!';
+    document.getElementById('text-' + level).textContent = 'Semua Urutan Benar!';
+    document.getElementById('sub-' + level).textContent = 'Hebat! Kamu berhasil menyusun paragraf dengan sempurna!';
     document.getElementById('text-' + level).style.color = 'var(--green)';
+  } else if (anyNewCorrect) {
+    // Ada yang baru benar, ada yang masih salah
+    document.getElementById('emoji-' + level).textContent = '💪';
+    document.getElementById('text-' + level).textContent = 'Sebagian Sudah Benar!';
+    document.getElementById('sub-' + level).textContent = 'Yang ✅ sudah terkunci. Susun ulang yang ❌ ya!';
+    document.getElementById('text-' + level).style.color = 'var(--orange)';
   } else {
+    // Tidak ada yang benar sama sekali
     soundSalah();
+    container.style.animation = 'shake .4s ease';
+    setTimeout(() => { container.style.animation = ''; }, 400);
     document.getElementById('emoji-' + level).textContent = '😅';
-    document.getElementById('text-' + level).textContent = 'Belum Tepat, Coba Lagi!';
-    document.getElementById('sub-' + level).textContent = 'Susun ulang kalimat dengan urutan yang benar ya!';
+    document.getElementById('text-' + level).textContent = 'Urutan Belum Tepat!';
+    document.getElementById('sub-' + level).textContent = 'Coba susun ulang lagi ya, kamu pasti bisa! 💪';
     document.getElementById('text-' + level).style.color = 'var(--red)';
   }
 }
 
 function resetUrutan(level) {
   soundClick();
+  const container = document.getElementById('drag-' + level);
+  const items = [...container.querySelectorAll('.urut-kalimat')];
+  items.forEach(item => {
+    item.querySelector('.urut-badge')?.remove();
+    item.style.background = '';
+    item.style.borderColor = '';
+    item.style.cursor = 'grab';
+    item.setAttribute('draggable', 'true');
+    item.dataset.locked = 'false';
+    const numSpan = item.querySelector('.kalimat-num');
+    numSpan.style.background = '';
+    numSpan.textContent = '?';
+  });
   document.getElementById('result-' + level).classList.remove('show');
 }
 
