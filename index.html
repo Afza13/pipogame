@@ -1964,6 +1964,8 @@ function resetUrutan(level) {
     numSpan.textContent = '?';
   });
   document.getElementById('result-' + level).classList.remove('show');
+  // Acak ulang posisi kalimat
+  acakUrutan('drag-' + level);
 }
 
 /* ═══════════════════════════════════════
@@ -2078,7 +2080,31 @@ function ulangSoal() {
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
+function acakUrutan(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const items = [...container.querySelectorAll('.urut-kalimat')];
+  let shuffled, attempts = 0;
+  do {
+    shuffled = [...items];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    attempts++;
+    // Pastikan tidak kebetulan sudah urut benar
+    const orders = shuffled.map(el => parseInt(el.getAttribute('data-order')));
+    const sorted = [...orders].sort((a,b) => a-b);
+    const sudahUrut = orders.every((v, i) => v === sorted[i]);
+    if (!sudahUrut || attempts > 20) break;
+  } while (true);
+  shuffled.forEach(item => container.appendChild(item));
+}
+
 window.addEventListener('load', () => {
+  acakUrutan('drag-mudah');
+  acakUrutan('drag-sedang');
+  acakUrutan('drag-sulit');
   setupDrag('drag-mudah');
   setupDrag('drag-sedang');
   setupDrag('drag-sulit');
